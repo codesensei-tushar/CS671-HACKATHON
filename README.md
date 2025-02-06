@@ -140,7 +140,6 @@ The code base is based on [ultralytics](https://github.com/ultralytics/ultralyti
 
 ## Citation
 
-If our code or models help your work, please cite our paper:
 ```BibTeX
 @article{tian2025yolov12,
   title={YOLOv12: Attention-Centric Real-Time Object Detectors},
