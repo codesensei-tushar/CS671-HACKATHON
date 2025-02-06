@@ -31,7 +31,7 @@ YOLOv12 surpasses all popular real-time object detectors in both speed and accur
 COCO
 
 | Model                                                                                | size<br><sup>(pixels) | mAP<sup>val<br>50-95 | Speed<br><sup>T4 TensorRT10<br> | params<br><sup>(M) | FLOPs<br><sup>(B) |
-| :----------------------------------------------------------------------------------- | :-------------------- | :--------------------| :-------------------------------| :----------------- | :---------------- |
+| :----------------------------------------------------------------------------------- | :-------------------: | :-------------------:| :------------------------------:| :-----------------:| :---------------:|
 | [YOLO12n](https://github.com/sunsmarterjie/assets/releases/download/v1.0/yolo12n.pt) | 640                   | xx.x                 | x.xx                            | 2.5                | 6.6               |
 | [YOLO12s](https://github.com/sunsmarterjie/assets/releases/download/v1.0/yolo12s.pt) | 640                   | xx.x                 | x.xx                            | 8.9                | 22.0              |
 | [YOLO12m](https://github.com/sunsmarterjie/assets/releases/download/v1.0/yolo12m.pt) | 640                   | xx.x                 | x.xx                            | 19.9               | 69.7              |
