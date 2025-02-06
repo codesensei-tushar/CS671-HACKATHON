@@ -31,12 +31,12 @@ YOLOv12 surpasses all popular real-time object detectors in both speed and accur
 COCO
 
 | Model                                                                                | size<br><sup>(pixels) | mAP<sup>val<br>50-95 | Speed<br><sup>T4 TensorRT10<br> | params<br><sup>(M) | FLOPs<br><sup>(B) |
-| ------------------------------------------------------------------------------------ | --------------------- | -------------------- | ------------------------------ | ----------------------------------- | ------------------ | ----------------- |
-| [YOLO12n](https://github.com/sunsmarterjie/assets/releases/download/v1.0/yolo12n.pt) | 640                   | xx.x                 | x.xx                          | 2.5                  | 6.6               |
-| [YOLO12s](https://github.com/sunsmarterjie/assets/releases/download/v1.0/yolo12s.pt) | 640                   | xx.x                 | x.xx                           | 8.9                 | 22.0              |
-| [YOLO12m](https://github.com/sunsmarterjie/assets/releases/download/v1.0/yolo12m.pt) | 640                   | xx.x                 | x.xx                           | 19.9               | 69.7              |
-| [YOLO12l](https://github.com/sunsmarterjie/assets/releases/download/v1.0/yolo12l.pt) | 640                   | xx.x                 | x.xx                           | 28.3               | 97.2              |
-| [YOLO12x](https://github.com/sunsmarterjie/assets/releases/download/v1.0/yolo12x.pt) | 640                   | xx.x                 | xx.x                          | 63.2               | 216.5             |
+| ------------------------------------------------------------------------------------ | --------------------- | ---------------------| --------------------------------| ------------------ | ----------------- |
+| [YOLO12n](https://github.com/sunsmarterjie/assets/releases/download/v1.0/yolo12n.pt) | 640                   | xx.x                 | x.xx                            | 2.5                | 6.6               |
+| [YOLO12s](https://github.com/sunsmarterjie/assets/releases/download/v1.0/yolo12s.pt) | 640                   | xx.x                 | x.xx                            | 8.9                | 22.0              |
+| [YOLO12m](https://github.com/sunsmarterjie/assets/releases/download/v1.0/yolo12m.pt) | 640                   | xx.x                 | x.xx                            | 19.9               | 69.7              |
+| [YOLO12l](https://github.com/sunsmarterjie/assets/releases/download/v1.0/yolo12l.pt) | 640                   | xx.x                 | x.xx                            | 28.3               | 97.2              |
+| [YOLO12x](https://github.com/sunsmarterjie/assets/releases/download/v1.0/yolo12x.pt) | 640                   | xx.x                 | xx.x                            | 63.2               | 216.5             |
 
 ## Installation
 ```
@@ -48,14 +48,18 @@ pip install -e .
 ```
 
 ## Validation
-[`yolov10n`](https://huggingface.co/jameslahm/yolov10n)  [`yolov10s`](https://huggingface.co/jameslahm/yolov10s)  [`yolov10m`](https://huggingface.co/jameslahm/yolov10m)  [`yolov10b`](https://huggingface.co/jameslahm/yolov10b)  [`yolov10l`](https://huggingface.co/jameslahm/yolov10l)  [`yolov10x`](https://huggingface.co/jameslahm/yolov10x)  
+[`yolov12n`]([https://github.com/sunsmarterjie/yolov12/releases/download/v1.0/yolov10n.pt)
+[`yolov12s`]([https://github.com/sunsmarterjie/yolov12/releases/download/v1.0/yolov10s.pt)
+[`yolov12m`]([https://github.com/sunsmarterjie/yolov12/releases/download/v1.0/yolov10m.pt)
+[`yolov12l`]([https://github.com/sunsmarterjie/yolov12/releases/download/v1.0/yolov10l.pt)
+[`yolov12x`]([https://github.com/sunsmarterjie/yolov12/releases/download/v1.0/yolov10x.pt)
 
 ```python
 from ultralytics import YOLO
 
-model = YOLO.from_pretrained('sunsmarterjie/yolov10{n/s/m/b/l/x}')
+model = YOLO.from_pretrained('sunsmarterjie/yolov12{n/s/m/b/l/x}')
 # or
-# wget https://github.com/THU-MIG/yolov10/releases/download/v1.1/yolov10{n/s/m/b/l/x}.pt
+# wget https://github.com/sunsmarterjie/yolov12/releases/download/v1.0/yolov12{n/s/m/l/x}.pt
 model = YOLO('yolov12{n/s/m/b/l/x}.pt')
 
 model.val(data='coco.yaml', batch=128)
@@ -92,9 +96,9 @@ path = model.export(format="onnx")  # return path to exported model
 
 # If you want to finetune the model with pretrained weights, you could load the 
 # pretrained weights like below
-# model = YOLO.from_pretrained('sunsmarterjie/yolov10{n/s/m/b/l/x}')
+# model = YOLO.from_pretrained('sunsmarterjie/yolov12{n/s/m/l/x}')
 # or
-# wget https://github.com/THU-MIG/yolov10/releases/download/v1.1/yolov10{n/s/m/b/l/x}.pt
+# wget https://github.com/sunsmarterjie/yolov12/releases/download/v1.0/yolov12{n/s/m/l/x}.pt
 # model = YOLO('yolov12{n/s/m/b/l/x}.pt')
 
 ```
@@ -103,9 +107,9 @@ path = model.export(format="onnx")  # return path to exported model
 ```python
 from ultralytics import YOLO
 
-model = YOLO.from_pretrained('sunsmarterjie/yolov10{n/s/m/b/l/x}')
+model = YOLO.from_pretrained('sunsmarterjie/yolov12{n/s/m/l/x}')
 # or
-# wget https://github.com/THU-MIG/yolov10/releases/download/v1.1/yolov10{n/s/m/b/l/x}.pt
+# wget https://github.com/sunsmarterjie/yolov12/releases/download/v1.0/yolov12{n/s/m/l/x}.pt
 model = YOLO('yolov12{n/s/m/b/l/x}.pt')
 
 model.predict()
@@ -115,9 +119,9 @@ model.predict()
 ```python
 from ultralytics import YOLO
 
-model = YOLO.from_pretrained('sunsmarterjie/yolov10{n/s/m/b/l/x}')
+model = YOLO.from_pretrained('sunsmarterjie/yolov12{n/s/m/l/x}')
 # or
-# wget https://github.com/THU-MIG/yolov10/releases/download/v1.1/yolov10{n/s/m/b/l/x}.pt
+# wget https://github.com/sunsmarterjie/yolov12/releases/download/v1.0/yolov12{n/s/m/l/x}.pt
 model = YOLOv10('yolov12{n/s/m/b/l/x}.pt')
 
 model.export(...)
