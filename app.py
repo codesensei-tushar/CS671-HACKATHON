@@ -1,8 +1,6 @@
-
 # --------------------------------------------------------
-# By Yunjie Tian
 # Based on yolov10
-# https://github.com/THU-MIG/yolov10
+# https://github.com/THU-MIG/yolov10/app.py
 # --------------------------------------------------------'
 
 import gradio as gr
