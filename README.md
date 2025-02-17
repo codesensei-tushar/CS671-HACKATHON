@@ -13,7 +13,7 @@ Official PyTorch implementation of **YOLOv12**.
 
 [![arXiv](https://img.shields.io/badge/arXiv-2405.14458-b31b1b.svg)](https://arxiv.org/abs/2502.xxxxx)
 
-## UPDATES 🔥
+## Updates
 - 2025/02/18: Arxiv 
 
 
