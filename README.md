@@ -89,14 +89,6 @@ results[0].show()
 
 ```
 
-## Finetuning
-```python
-from ultralytics import YOLO
-
-model = YOLO('yolov12{n/s/m/l/x}.pt')
-
-```
-
 ## Prediction
 ```python
 from ultralytics import YOLO
