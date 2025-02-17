@@ -107,9 +107,6 @@ model.export(format="engine", half=True)  # or ONNX format
 
 
 ## Demo
-```
-pip install gradio==4.44.1 opencv-python
-```
 
 ```
 python app.py
