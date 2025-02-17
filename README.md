@@ -20,9 +20,9 @@ Yunjie Tian, Qixiang Ye, and David Doermann\
   <summary>
   <font size="+1">Abstract</font>
   </summary>
-Enhancing the network architecture of the YOLO framework has been long crucial yet focused on CNN-based improvements, despite the proven superiority of attention mechanisms in modeling capabilities. This is because attention-based models cannot match the speed of CNN-based models. This paper proposes an attention-centric YOLO framework, namely YOLOv12, that matches the speed of CNN-based ones while harnessing the performance benefits of attention mechanisms.
+Enhancing the network architecture of the YOLO framework has been crucial for a long time but has focused on CNN-based improvements despite the proven superiority of attention mechanisms in modeling capabilities. This is because attention-based models cannot match the speed of CNN-based models. This paper proposes an attention-centric YOLO framework, namely YOLOv12, that matches the speed of previous CNN-based ones while harnessing the performance benefits of attention mechanisms.
 
-YOLOv12 surpasses all popular real-time object detectors in both speed and accuracy. For example, YOLOv12-N achieves $40.4$ mAP with an inference latency of $1.4$ ms on a T4 GPU, outperforming the advanced YOLOv10-N/YOLOv11-N by $1.9/1.0$ mAP and being $x.x\%/x.x\%$ faster. This advantage extends to other model scales. Furthermore, YOLOv12-S achieves comparable accuracy to RT-DETR-R18/xxxx while running $86\%/xx\%$ faster, using only $35\%/xx\%$ of the computation and $45\%/xx\%$ of the parameters
+YOLOv12 surpasses all popular real-time object detectors in accuracy with competitive speed. For example, YOLOv12-N achieves 40.6% mAP with an inference latency of 1.64 ms on a T4 GPU, outperforming advanced YOLOv10-N / YOLOv11-N by 2.1%/1.2% mAP with a comparable speed. This advantage extends to other model scales. YOLOv12 also surpasses end-to-end real-time detectors that improve DETR, such as RT-DETR / RT-DETRv2: YOLOv12-S beats RT-DETR-R18 / RT-DETRv2-R18 while running 42% faster, using only 36% of the computation and 45% of the parameters.
 </details>
 
 
