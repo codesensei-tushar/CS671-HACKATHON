@@ -131,7 +131,7 @@ The code base is based on [ultralytics](https://github.com/ultralytics/ultralyti
 ```BibTeX
 @article{tian2025yolov12,
   title={YOLOv12: Attention-Centric Real-Time Object Detectors},
-  author={Tian, Yunjie and etc.},
+  author={Tian, Yunjie and Ye, Qixiang and Doermann, David.},
   journal={arXiv preprint arXiv:2502.xxxxx},
   year={2025}
 }
