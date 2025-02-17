@@ -1177,7 +1177,7 @@ class AAttn(nn.Module):
     Examples:
         >>> import torch
         >>> from ultralytics.nn.modules import AAttn
-        >>> model = AAttn(dim=64, num_heads=3, area=4)
+        >>> model = AAttn(dim=64, num_heads=2, area=4)
         >>> x = torch.randn(2, 64, 128, 128)
         >>> output = model(x)
         >>> print(output.shape)
@@ -1315,7 +1315,7 @@ class A2C2f(nn.Module):
     Examples:
         >>> import torch
         >>> from ultralytics.nn.modules import A2C2f
-        >>> model = A2C2f(c1=64, c2=64, n=2, a2=True, area=4, align=False, residual=True, e=0.5)
+        >>> model = A2C2f(c1=64, c2=64, n=2, a2=True, area=4, residual=True, e=0.5)
         >>> x = torch.randn(2, 64, 128, 128)
         >>> output = model(x)
         >>> print(output.shape)
