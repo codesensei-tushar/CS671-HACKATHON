@@ -116,7 +116,7 @@ python app.py
 
 ## Acknowledgement
 
-The code base is based on [ultralytics](https://github.com/ultralytics/ultralytics). Thanks for their excellent work!
+The code is based on [ultralytics](https://github.com/ultralytics/ultralytics). Thanks for their excellent work!
 
 ## Citation
 
