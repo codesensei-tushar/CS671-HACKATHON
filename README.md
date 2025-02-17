@@ -5,7 +5,7 @@ Official PyTorch implementation of **YOLOv12**.
 
 <p align="center">
   <img src="assets/tradeoff.svg" width=90%> <br>
-  Comparisons with others in terms of latency-accuracy (left) and FLOPs-accuracy (right) trade-offs.
+  Comparisons with others in terms of latency-accuracy (left) and FLOPs-accuracy (right) trade-offs
 </p>
 
 [YOLOv12: Attention-Centric Real-Time Object Detector](https://arxiv.org/abs/2502.xxxxx).\
