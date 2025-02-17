@@ -13,7 +13,7 @@ Yunjie Tian, Qixiang Ye, and David Doermann\
 [![arXiv](https://img.shields.io/badge/arXiv-2405.14458-b31b1b.svg)](https://arxiv.org/abs/2502.xxxxx)
 
 ## UPDATES 🔥
-- 2025/02/15: ! 
+- 2025/02/18: Arxiv 
 
 
 <details>
@@ -47,11 +47,11 @@ pip install -e .
 ```
 
 ## Validation
-[`yolov12n`]([https://github.com/sunsmarterjie/yolov12/releases/download/v1.0/yolov10n.pt)
-[`yolov12s`]([https://github.com/sunsmarterjie/yolov12/releases/download/v1.0/yolov10s.pt)
-[`yolov12m`]([https://github.com/sunsmarterjie/yolov12/releases/download/v1.0/yolov10m.pt)
-[`yolov12l`]([https://github.com/sunsmarterjie/yolov12/releases/download/v1.0/yolov10l.pt)
-[`yolov12x`]([https://github.com/sunsmarterjie/yolov12/releases/download/v1.0/yolov10x.pt)
+[`yolov12n`](https://github.com/sunsmarterjie/yolov12/releases/download/v1.0/yolov12n.pt)
+[`yolov12s`](https://github.com/sunsmarterjie/yolov12/releases/download/v1.0/yolov12s.pt)
+[`yolov12m`](https://github.com/sunsmarterjie/yolov12/releases/download/v1.0/yolov12m.pt)
+[`yolov12l`](https://github.com/sunsmarterjie/yolov12/releases/download/v1.0/yolov12l.pt)
+[`yolov12x`](https://github.com/sunsmarterjie/yolov12/releases/download/v1.0/yolov12x.pt)
 
 ```python
 from ultralytics import YOLO
@@ -86,19 +86,13 @@ metrics = model.val()
 results = model("path/to/image.jpg")
 results[0].show()
 
-# Export the model to ONNX format
-path = model.export(format="onnx")  # return path to exported model
 ```
 
 ## Finetuning
 ```python
+from ultralytics import YOLO
 
-# If you want to finetune the model with pretrained weights, you could load the 
-# pretrained weights like below
-# model = YOLO.from_pretrained('sunsmarterjie/yolov12{n/s/m/l/x}')
-# or
-# wget https://github.com/sunsmarterjie/yolov12/releases/download/v1.0/yolov12{n/s/m/l/x}.pt
-# model = YOLO('yolov12{n/s/m/b/l/x}.pt')
+model = YOLO('yolov12{n/s/m/l/x}.pt')
 
 ```
 
@@ -106,11 +100,7 @@ path = model.export(format="onnx")  # return path to exported model
 ```python
 from ultralytics import YOLO
 
-model = YOLO.from_pretrained('sunsmarterjie/yolov12{n/s/m/l/x}')
-# or
-# wget https://github.com/sunsmarterjie/yolov12/releases/download/v1.0/yolov12{n/s/m/l/x}.pt
-model = YOLO('yolov12{n/s/m/b/l/x}.pt')
-
+model = YOLO('yolov12{n/s/m/l/x}.pt')
 model.predict()
 ```
 
@@ -118,11 +108,7 @@ model.predict()
 ```python
 from ultralytics import YOLO
 
-model = YOLO.from_pretrained('sunsmarterjie/yolov12{n/s/m/l/x}')
-# or
-# wget https://github.com/sunsmarterjie/yolov12/releases/download/v1.0/yolov12{n/s/m/l/x}.pt
-model = YOLOv10('yolov12{n/s/m/b/l/x}.pt')
-
+model = YOLO('yolov12{n/s/m/l/x}.pt')
 model.export(...)
 ```
 
