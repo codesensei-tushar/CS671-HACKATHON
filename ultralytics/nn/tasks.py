@@ -1033,10 +1033,9 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
                     args[3] = True
             if m is A2C2f:  # for M/L/X sizes
                 legacy = False
-                if scale in "mlx":
-                    args[3] = True
                 if scale in "lx":
                     args.append(True)
+                    args.append(1.2)
         elif m is AIFI:
             args = [ch[f], *args]
         elif m in {HGStem, HGBlock}:
