@@ -4,8 +4,7 @@
 Official PyTorch implementation of **YOLOv12**.
 
 <p align="center">
-  <img src="assets/latency.svg" width=48%>
-  <img src="assets/params.svg" width=48%> <br>
+  <img src="assets/tradeoff.svg" width=90%> <br>
   Comparisons with others in terms of latency-accuracy (left) and parameter-accuracy (right) trade-offs.
 </p>
 
