@@ -1247,7 +1247,7 @@ class AAttn(nn.Module):
 
 class ABlock(nn.Module):
     """
-    ABlock class implementing a Area-Attention block with faster feature extraction.
+    ABlock class implementing a Area-Attention block with effective feature extraction.
 
     This class encapsulates the functionality for applying multi-head attention with feature map are dividing into areas
     and feed-forward neural network layers.
