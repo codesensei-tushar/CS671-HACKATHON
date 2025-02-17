@@ -112,11 +112,13 @@ model = YOLO('yolov12{n/s/m/l/x}.pt')
 model.export(format="engine", half=True)  # or ONNX format
 ```
 
+<!--
 ## Demo
 ```
 python app.py
 # Please visit http://127.0.0.1:7860
 ```
+-->
 
 
 ## Acknowledgement
