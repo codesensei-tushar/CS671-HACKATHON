@@ -56,12 +56,8 @@ pip install -e .
 ```python
 from ultralytics import YOLO
 
-model = YOLO.from_pretrained('sunsmarterjie/yolov12{n/s/m/b/l/x}')
-# or
-# wget https://github.com/sunsmarterjie/yolov12/releases/download/v1.0/yolov12{n/s/m/l/x}.pt
-model = YOLO('yolov12{n/s/m/b/l/x}.pt')
-
-model.val(data='coco.yaml', batch=128)
+model = YOLO('yolov12{n/s/m/l/x}.pt')
+model.val(data='coco.yaml', save_json=True)
 ```
 
 ## Training 
@@ -74,9 +70,13 @@ model = YOLO('yolov12n.yaml')
 results = model.train(
   data='coco.yaml',
   epochs=600, 
-  batch=128, 
+  batch=256, 
   imgsz=640,
-  device="0,1,2,3",
+  scale=0.5,  # S:0.9; M:0.9; L:0.9; X:0.9
+  mosaic=1.0,
+  mixup=0.0,  # S:0.05; M:0.15; L:0.15; X:0.2
+  copy_paste=0.1,  # S:0.15; M:0.4; L:0.5; X:0.6
+  device="0,1,2,3,4,5,6,7",
 )
 
 # Evaluate model performance on the validation set
