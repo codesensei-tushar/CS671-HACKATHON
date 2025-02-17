@@ -429,6 +429,10 @@ def attempt_download_asset(file, repo="ultralytics/assets", release="v8.3.0", **
     """
     from ultralytics.utils import SETTINGS  # scoped for circular import
 
+    if 'v12' in file:
+        repo = "sunsmarterjie/yolov12"
+        release = "v1.0"
+
     # YOLOv3/5u updates
     file = str(file)
     file = checks.check_yolov5u_filename(file)
