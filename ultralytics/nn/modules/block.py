@@ -1295,7 +1295,7 @@ class A2C2f(nn.Module):
     """
     A2C2f module with residual enhanced feature extraction using ABlock blocks with area-attention. Also known as R-ELAN
 
-    This class extends the C2f module by incorporating ABlock blocks for faster attention mechanisms and feature extraction.
+    This class extends the C2f module by incorporating ABlock blocks for fast attention mechanisms and feature extraction.
 
     Attributes:
         c1 (int): Number of input channels;
@@ -1303,16 +1303,14 @@ class A2C2f(nn.Module):
         n (int, optional): Number of 2xABlock modules to stack. Defaults to 1;
         a2 (bool, optional): Whether use area-attention. Defaults to True;
         area (int, optional): Number of areas the feature map is divided. Defaults to 1;
-        align (bool, optional): Whether align the channel dimention. Defaults to False;
         residual (bool, optional): Whether use the residual (with layer scale). Defaults to False;
-        e (float, optional): Expansion ratio for R-ELAN modules. Defaults to 0.5.
         mlp_ratio (float, optional): MLP expansion ratio (or MLP hidden dimension ratio). Defaults to 1.2;
+        e (float, optional): Expansion ratio for R-ELAN modules. Defaults to 0.5.
         g (int, optional): Number of groups for grouped convolution. Defaults to 1;
         shortcut (bool, optional): Whether to use shortcut connection. Defaults to True;
 
     Methods:
         forward: Performs a forward pass through the A2C2f module.
-        forward_split: Performs a forward pass using split() instead of chunk().
 
     Examples:
         >>> import torch
