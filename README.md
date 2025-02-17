@@ -42,7 +42,7 @@ COCO
 ```
 wget https://github.com/Dao-AILab/flash-attention/releases/download/v2.7.3/flash_attn-2.7.3+cu11torch2.2cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
 conda create -n yolov12 python=3.11
-source activate yolov12
+conda activate yolov12
 pip install -r requirements.txt
 pip install -e .
 ```
