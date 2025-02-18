@@ -1,4 +1,4 @@
-# [YOLOv12: Attention-Centric Real-Time Object Detector](https://arxiv.org/abs/2502.xxxxx)
+# [YOLOv12: Attention-Centric Real-Time Object Detectors](https://arxiv.org/abs/2502.xxxxx)
 
 
 Official PyTorch implementation of **YOLOv12**.
