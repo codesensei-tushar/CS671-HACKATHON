@@ -1172,7 +1172,7 @@ class AAttn(nn.Module):
         area (int, optional): Number of areas the feature map is divided. Defaults to 1.
 
     Methods:
-        forward: Performs a forward process of input tensor and outputs a tensor after the execution of the attention mechanism..
+        forward: Performs a forward process of input tensor and outputs a tensor after the execution of the area attention mechanism.
 
     Examples:
         >>> import torch
@@ -1202,7 +1202,7 @@ class AAttn(nn.Module):
 
 
     def forward(self, x):
-        """Processes the input tensor 'x' through the area-attention or attention mechanism."""
+        """Processes the input tensor 'x' through the area-attention"""
         B, C, H, W = x.shape
         N = H * W
 
