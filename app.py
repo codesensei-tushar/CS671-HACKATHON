@@ -155,7 +155,7 @@ with gradio_app:
     gr.HTML(
         """
         <h3 style='text-align: center'>
-        <a href='https://arxiv.org/abs/2503.xxxxx' target='_blank'>arXiv</a> | <a href='https://github.com/sunsmarterjie/yolov12' target='_blank'>github</a>
+        <a href='https://arxiv.org/abs/2502.12524' target='_blank'>arXiv</a> | <a href='https://github.com/sunsmarterjie/yolov12' target='_blank'>github</a>
         </h3>
         """)
     with gr.Row():
