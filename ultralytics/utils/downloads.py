@@ -429,7 +429,7 @@ def attempt_download_asset(file, repo="ultralytics/assets", release="v8.3.0", **
     """
     from ultralytics.utils import SETTINGS  # scoped for circular import
 
-    if 'v12' in file:
+    if 'v12' in str(file):
         repo = "sunsmarterjie/yolov12"
         release = "v1.0"
 
