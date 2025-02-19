@@ -15,6 +15,8 @@ Official PyTorch implementation of **YOLOv12**.
   Comparison with popular methods in terms of latency-accuracy (left) and FLOPs-accuracy (right) trade-offs
 </p>
 
+</div>
+
 [![arXiv](https://img.shields.io/badge/arXiv-2502.12524-b31b1b.svg)](https://arxiv.org/abs/2502.12524)
 
 ## Updates
