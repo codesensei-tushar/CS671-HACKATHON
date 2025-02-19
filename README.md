@@ -1,5 +1,4 @@
 
-Official PyTorch implementation of **YOLOv12**.
 
 <div align="center">
 <h1>YOLOv12 </h1>
