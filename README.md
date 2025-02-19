@@ -11,7 +11,7 @@ Official PyTorch implementation of **YOLOv12**.
 [YOLOv12: Attention-Centric Real-Time Object Detectors](https://arxiv.org/abs/2502.12524)\
 [Yunjie Tian](https://sunsmarterjie.github.io/), [Qixiang Ye](https://people.ucas.ac.cn/~qxye?language=en), and [David Doermann](https://cse.buffalo.edu/~doermann/)
 
-[![arXiv](https://img.shields.io/badge/arXiv-2405.14458-b31b1b.svg)](https://arxiv.org/abs/2502.12524)
+[![arXiv](https://img.shields.io/badge/arXiv-2502.12524-b31b1b.svg)](https://arxiv.org/abs/2502.12524)
 
 ## Updates
 - 2025/02/18: Arxiv 
