@@ -33,7 +33,6 @@ YOLOv12 surpasses all popular real-time object detectors in accuracy with compet
 
 
 ## Main Results
-COCO
 
 | Model                                                                                | size<br><sup>(pixels) | mAP<sup>val<br>50-95 | Speed<br><sup>T4 TensorRT10<br> | params<br><sup>(M) | FLOPs<br><sup>(G) |
 | :----------------------------------------------------------------------------------- | :-------------------: | :-------------------:| :------------------------------:| :-----------------:| :---------------:|
