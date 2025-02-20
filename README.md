@@ -19,6 +19,8 @@
 [![arXiv](https://img.shields.io/badge/arXiv-2502.12524-b31b1b.svg)](https://arxiv.org/abs/2502.12524) [![Hugging Face Demo](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/sunsmarterjieleaf/yolov12) 
 
 ## Updates
+- 2025/02/20: [any computer or edge device?](https://github.com/roboflow/inference). Support yolov12 now.
+
 - 2025/02/20: [ONNX CPP Version](https://github.com/mohamedsamirx/YOLOv12-ONNX-CPP). [Train a yolov12 model on a custom dataset?](https://blog.roboflow.com/train-yolov12-model/)
 
 - 2025/02/19: [arXiv version](https://arxiv.org/abs/2502.12524) is public. [Demo](https://huggingface.co/spaces/sunsmarterjieleaf/yolov12) is available.
