@@ -21,7 +21,7 @@
 ## Updates
 - 2025/02/21: Try yolo12 for classification, Oriented Bounding Boxes, pose estimation, and instance segmentation at [ultralytics](https://github.com/ultralytics/ultralytics/tree/main/ultralytics/cfg/models/12). Thanks them!
 
-- 2025/02/20: [Any computer or edge device?](https://github.com/roboflow/inference) Support yolov12 now.  
+- 2025/02/20: [Any computer or edge device?](https://github.com/roboflow/inference) Support yolo12 now.  
   
 - 2025/02/20: [ONNX CPP Version](https://github.com/mohamedsamirx/YOLOv12-ONNX-CPP). [Train a yolov12 model on a custom dataset?](https://blog.roboflow.com/train-yolov12-model/). An introduction at [Youtube](https://www.youtube.com/watch?v=1YZDsZL_VyI&t=120s).
 
