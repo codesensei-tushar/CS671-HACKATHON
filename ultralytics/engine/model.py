@@ -8,6 +8,8 @@ import numpy as np
 import torch
 from PIL import Image
 
+from huggingface_hub import PyTorchModelHubMixin
+
 from ultralytics.cfg import TASK2DATA, get_cfg, get_save_dir
 from ultralytics.engine.results import Results
 from ultralytics.hub import HUB_WEB_ROOT, HUBTrainingSession
@@ -26,7 +28,7 @@ from ultralytics.utils import (
 )
 
 
-class Model(nn.Module):
+class Model(nn.Module, PyTorchModelHubMixin, repo_url="https://github.com/ultralytics/ultralytics", pipeline_tag="object-detection", license="agpl-3.0"):
     """
     A base class for implementing YOLO models, unifying APIs across different model types.
 
