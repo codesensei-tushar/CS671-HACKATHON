@@ -20,7 +20,7 @@
 
 ## Updates
 
-- 2025/02/22: [How to Train YOLO12 on a custom dataset | Step-by-step Guide](https://youtu.be/dO8k5rgXG0M) by [Noor](https://github.com/noorkhokhar99).
+- 2025/02/22: [How to train YOLO12 on a custom dataset | Step-by-step guide](https://youtu.be/dO8k5rgXG0M) by [Noor](https://github.com/noorkhokhar99).
 
 - 2025/02/22: [Android deploy](https://github.com/mpj1234/ncnn-yolov12-android/tree/main). [TensorRT-YOLO](https://github.com/laugh12321/TensorRT-YOLO) accelerates yolo12 inference. Thanks to them!
 
