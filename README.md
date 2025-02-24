@@ -20,9 +20,9 @@
 
 ## Updates
 
-- 2025/02/22: [YOLOv12 TensorRT CPP Inference Repo + Google Colab Notebook Support](https://github.com/mohamedsamirx/YOLOv12-TensorRT-CPP).
+- 2025/02/24: Some blog introductions: [ultralytics](https://docs.ultralytics.com/models/yolo12/), [LearnOpenCV](https://learnopencv.com/yolov12/)
 
-- 2025/02/22: [How to train YOLO12 on a custom dataset | Step-by-step guide](https://youtu.be/dO8k5rgXG0M) by [Noor](https://github.com/noorkhokhar99).
+- 2025/02/22: [YOLOv12 TensorRT CPP Inference Repo + Google Colab Notebook Support](https://github.com/mohamedsamirx/YOLOv12-TensorRT-CPP).
 
 - 2025/02/22: [Android deploy](https://github.com/mpj1234/ncnn-yolov12-android/tree/main). [TensorRT-YOLO](https://github.com/laugh12321/TensorRT-YOLO) accelerates yolo12 inference. Thanks to them!
 
@@ -30,7 +30,7 @@
 
 - 2025/02/20: [Any computer or edge device?](https://github.com/roboflow/inference) Support yolo12 now.  
   
-- 2025/02/20: [ONNX CPP Version](https://github.com/mohamedsamirx/YOLOv12-ONNX-CPP). [Train a yolov12 model on a custom dataset?](https://blog.roboflow.com/train-yolov12-model/) An introduction at [Youtube](https://www.youtube.com/watch?v=1YZDsZL_VyI&t=120s).
+- 2025/02/20: [ONNX CPP Version](https://github.com/mohamedsamirx/YOLOv12-ONNX-CPP). [Train a yolov12 model on a custom dataset?](https://blog.roboflow.com/train-yolov12-model/) An introduction at [Youtube](https://www.youtube.com/watch?v=1YZDsZL_VyI&t=120s). [How to train YOLO12 on a custom dataset | Step-by-step guide](https://youtu.be/dO8k5rgXG0M) by [Noor](https://github.com/noorkhokhar99).
 
 - 2025/02/19: [arXiv version](https://arxiv.org/abs/2502.12524) is public. [Demo](https://huggingface.co/spaces/sunsmarterjieleaf/yolov12) is available (try [Demo2](https://huggingface.co/spaces/sunsmarterjieleaf/yolov12_demo2) [Demo3](https://huggingface.co/spaces/sunsmarterjieleaf/yolov12_demo3) if busy).
 
