@@ -26,7 +26,7 @@
 
 - 2025/02/22: [Android deploy](https://github.com/mpj1234/ncnn-yolov12-android/tree/main). [TensorRT-YOLO](https://github.com/laugh12321/TensorRT-YOLO) accelerates yolo12 inference. Thanks to them!
 
-- 2025/02/21: Try yolo12 for classification, oriented bounding boxes, pose estimation, and instance segmentation at [ultralytics](https://github.com/ultralytics/ultralytics/tree/main/ultralytics/cfg/models/12). Thanks to them!
+- 2025/02/21: Try yolo12 for classification, oriented bounding boxes, pose estimation, and instance segmentation at [ultralytics](https://github.com/ultralytics/ultralytics/tree/main/ultralytics/cfg/models/12). Thanks to them! Please pay attention to this [issue](https://github.com/sunsmarterjie/yolov12/issues/29).
 
 - 2025/02/20: [Any computer or edge device?](https://github.com/roboflow/inference) Support yolo12 now.  
   
