@@ -20,7 +20,7 @@
 
 ## Updates
 
-- 2025/02/24: Some blog introductions: [ultralytics](https://docs.ultralytics.com/models/yolo12/), [LearnOpenCV](https://learnopencv.com/yolov12/)
+- 2025/02/24: Some blog introductions: [ultralytics](https://docs.ultralytics.com/models/yolo12/), [LearnOpenCV](https://learnopencv.com/yolov12/), [Medium@Mert](https://medium.com/@Mert.A/how-to-use-yolov12-for-object-detection-a93b3c2592a3). Thanks to them!
 
 - 2025/02/22: [YOLOv12 TensorRT CPP Inference Repo + Google Colab Notebook Support](https://github.com/mohamedsamirx/YOLOv12-TensorRT-CPP).
 
