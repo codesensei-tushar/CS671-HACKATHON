@@ -30,7 +30,7 @@
 
 - 2025/02/20: [Any computer or edge device?](https://github.com/roboflow/inference) Support yolo12 now.  
   
-- 2025/02/20: [ONNX CPP Version](https://github.com/mohamedsamirx/YOLOv12-ONNX-CPP). Train a yolov12 model on a custom dataset?[blog](https://blog.roboflow.com/train-yolov12-model/) and [Youtube](https://www.youtube.com/watch?v=fksJmIMIfXo). [How to train YOLO12 on a custom dataset | Step-by-step guide](https://youtu.be/dO8k5rgXG0M) by [Noor](https://github.com/noorkhokhar99).
+- 2025/02/20: [ONNX CPP Version](https://github.com/mohamedsamirx/YOLOv12-ONNX-CPP). Train a yolov12 model on a custom dataset: [Blog](https://blog.roboflow.com/train-yolov12-model/) and [Youtube](https://www.youtube.com/watch?v=fksJmIMIfXo). [Train YOLO12 on a custom dataset step-by-step](https://youtu.be/dO8k5rgXG0M) by [Noor](https://github.com/noorkhokhar99).
 
 - 2025/02/19: [arXiv version](https://arxiv.org/abs/2502.12524) is public. [Demo](https://huggingface.co/spaces/sunsmarterjieleaf/yolov12) is available (try [Demo2](https://huggingface.co/spaces/sunsmarterjieleaf/yolov12_demo2) [Demo3](https://huggingface.co/spaces/sunsmarterjieleaf/yolov12_demo3) if busy).
 
