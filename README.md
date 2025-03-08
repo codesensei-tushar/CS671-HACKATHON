@@ -20,7 +20,7 @@
 
 ## Updates
 
-- 2025/03/09: YOLOv12-turbo is released: a faster YOLOv12 version.
+- 2025/03/09: **YOLOv12-turbo** is released: a faster YOLOv12 version.
 
 - 2025/02/24: Some blog introductions: [ultralytics](https://docs.ultralytics.com/models/yolo12/), [LearnOpenCV](https://learnopencv.com/yolov12/), [Medium@Mert](https://medium.com/@Mert.A/how-to-use-yolov12-for-object-detection-a93b3c2592a3). Thanks to them!
 
