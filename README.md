@@ -26,13 +26,13 @@
 
 - 2025/02/22: [YOLOv12 TensorRT CPP Inference Repo + Google Colab Notebook Support](https://github.com/mohamedsamirx/YOLOv12-TensorRT-CPP).
 
-- 2025/02/22: [Android deploy](https://github.com/mpj1234/ncnn-yolov12-android/tree/main). [TensorRT-YOLO](https://github.com/laugh12321/TensorRT-YOLO) accelerates yolo12 inference. Thanks to them!
+- 2025/02/22: [Android deploy](https://github.com/mpj1234/ncnn-yolov12-android/tree/main) / [TensorRT-YOLO](https://github.com/laugh12321/TensorRT-YOLO) accelerates yolo12 inference. Thanks to them!
 
 - 2025/02/21: Try yolo12 for classification, oriented bounding boxes, pose estimation, and instance segmentation at [ultralytics](https://github.com/ultralytics/ultralytics/tree/main/ultralytics/cfg/models/12). Please pay attention to this [issue](https://github.com/sunsmarterjie/yolov12/issues/29). Thanks to them! 
 
-- 2025/02/20: [Any computer or edge device?](https://github.com/roboflow/inference)   [ONNX CPP Version](https://github.com/mohamedsamirx/YOLOv12-ONNX-CPP)
+- 2025/02/20: [Any computer or edge device?](https://github.com/roboflow/inference)  / [ONNX CPP Version](https://github.com/mohamedsamirx/YOLOv12-ONNX-CPP)
   
-- 2025/02/20: Train a yolov12 model on a custom dataset: [Blog](https://blog.roboflow.com/train-yolov12-model/) and [Youtube](https://www.youtube.com/watch?v=fksJmIMIfXo). [Train YOLO12 on a custom dataset step-by-step](https://youtu.be/dO8k5rgXG0M) by [Noor](https://github.com/noorkhokhar99).
+- 2025/02/20: Train a yolov12 model on a custom dataset: [Blog](https://blog.roboflow.com/train-yolov12-model/) and [Youtube](https://www.youtube.com/watch?v=fksJmIMIfXo). / [Train YOLO12 on a custom dataset step-by-step](https://youtu.be/dO8k5rgXG0M) by [Noor](https://github.com/noorkhokhar99).
 
 - 2025/02/19: [arXiv version](https://arxiv.org/abs/2502.12524) is public. [Demo](https://huggingface.co/spaces/sunsmarterjieleaf/yolov12) is available (try [Demo2](https://huggingface.co/spaces/sunsmarterjieleaf/yolov12_demo2) [Demo3](https://huggingface.co/spaces/sunsmarterjieleaf/yolov12_demo3) if busy).
 
