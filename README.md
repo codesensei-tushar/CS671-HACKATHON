@@ -20,6 +20,8 @@
 
 ## Updates
 
+- 2025/03/18: Some guys are interested in the heatmap. See this [issue](https://github.com/sunsmarterjie/yolov12/issues/74).
+
 - 2025/03/09: **YOLOv12-turbo** is released: a faster YOLOv12 version.
 
 - 2025/02/24: Blogs: [ultralytics](https://docs.ultralytics.com/models/yolo12/), [LearnOpenCV](https://learnopencv.com/yolov12/). Thanks to them!
