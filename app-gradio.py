@@ -13,8 +13,8 @@ def yolov12_inference(image, video, model_id, image_size, conf_threshold):
     model = YOLO(model_id)
     model.model.classes = [0]
     if image:
-        # results = model.predict(source=image, imgsz=image_size, conf=conf_threshold,classes=[0],tracker="bytetrack.yaml")
-        results = model.predict(source=image, imgsz=image_size, conf=conf_threshold,classes=[0],tracker="botsort.yaml")
+        results = model.predict(source=image, imgsz=image_size, conf=conf_threshold,classes=[0],tracker="bytetrack.yaml")
+        # results = model.predict(source=image, imgsz=image_size, conf=conf_threshold,classes=[0],tracker="botsort.yaml")
         annotated_image = results[0].plot()
         return annotated_image[:, :, ::-1], None
     else:
@@ -36,9 +36,10 @@ def yolov12_inference(image, video, model_id, image_size, conf_threshold):
             if not ret:
                 break
 
-            # results = model.predict(source=frame, imgsz=image_size, conf=conf_threshold,classes=[0],tracker="bytetrack.yaml")
-            results = model.predict(source=frame, imgsz=image_size, conf=conf_threshold,classes=[0],tracker="botsort.yaml")
+            results = model.track(source=frame, imgsz=image_size, conf=conf_threshold, classes=[0], tracker="bytetrack.yaml")
             annotated_frame = results[0].plot()
+
+            # Draw tracking lines and IDs
             for box in results[0].boxes:
                 if hasattr(box, 'id') and box.id is not None:
                     track_id = int(box.id.item())
@@ -60,8 +61,17 @@ def yolov12_inference(image, video, model_id, image_size, conf_threshold):
                             track_history[track_id][i - 1],
                             track_history[track_id][i],
                             (0, 255, 0),
-                            2
-                        )
+                            2)
+                    cv2.putText(
+                        annotated_frame,
+                        f'ID: {track_id}',
+                        (center[0] - 10, center[1] - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.6,
+                        (0, 255, 255),
+                        2,
+                        cv2.LINE_AA
+                    )
             out.write(annotated_frame)
 
         cap.release()
