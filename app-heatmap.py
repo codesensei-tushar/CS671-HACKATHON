@@ -8,6 +8,22 @@ import cv2
 import tempfile
 from ultralytics import YOLO
 from ultralytics.solutions.heatmap import Heatmap
+import numpy as np
+import cv2
+
+def draw_colorbar(frame, colormap=cv2.COLORMAP_JET, min_val=0, max_val=255, width=30, margin=10):
+    h, w = frame.shape[:2]
+    bar_height = h // 2
+    bar = np.linspace(min_val, max_val, bar_height).astype(np.uint8)
+    bar = np.expand_dims(bar, axis=1)
+    bar = cv2.applyColorMap(bar, colormap)
+    bar = cv2.resize(bar, (width, bar_height))
+    # Place the colorbar on the right side
+    frame[margin:margin+bar_height, w-width-margin:w-margin] = bar
+    # Add min/max text
+    cv2.putText(frame, f'Low', (w-width-5*margin, margin+bar_height), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 2)
+    cv2.putText(frame, f'High', (w-width-5*margin, margin+20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 2)
+    return frame
 
 
 def yolov12_inference(image, video, model_id, image_size, conf_threshold):
@@ -74,6 +90,19 @@ def yolov12_heatmap_inference(image, video, model_id, image_size, conf_threshold
 
             # This will run detection+tracking and overlay the heatmap
             heatmap_frame = heatmap.generate_heatmap(frame)
+            num_people = len(heatmap.tracker.tracks) if hasattr(heatmap, 'tracker') else 0
+            cv2.putText(
+                heatmap_frame,
+                f'Count: {num_people}',
+                (20, 40),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                1.2,
+                (0, 0, 255),
+                3,
+                cv2.LINE_AA
+            )
+            # Add color bar
+            heatmap_frame = draw_colorbar(heatmap_frame)
             out.write(heatmap_frame)
 
         cap.release()
