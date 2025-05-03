@@ -39,12 +39,12 @@ def yolov12_inference(image, model_path='yolov12m.pt', image_size=640, conf_thre
         
         # Load model
         model = YOLO(model_path)
-        
+        model.model.classes = [0]
         # Run inference
         results = model.predict(
             source=image, 
             imgsz=image_size, 
-            conf=conf_threshold
+            conf=conf_threshold,classes=[0]
         )
         
         # Plot annotated image
