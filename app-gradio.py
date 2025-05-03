@@ -2,7 +2,7 @@
 # Based on yolov10
 # https://github.com/THU-MIG/yolov10/app.py
 # --------------------------------------------------------'
-
+import threading
 import gradio as gr
 import cv2
 import tempfile
@@ -13,7 +13,8 @@ def yolov12_inference(image, video, model_id, image_size, conf_threshold):
     model = YOLO(model_id)
     model.model.classes = [0]
     if image:
-        results = model.predict(source=image, imgsz=image_size, conf=conf_threshold,classes=[0])
+        # results = model.predict(source=image, imgsz=image_size, conf=conf_threshold,classes=[0],tracker="bytetrack.yaml")
+        results = model.predict(source=image, imgsz=image_size, conf=conf_threshold,classes=[0],tracker="botsort.yaml")
         annotated_image = results[0].plot()
         return annotated_image[:, :, ::-1], None
     else:
@@ -29,14 +30,38 @@ def yolov12_inference(image, video, model_id, image_size, conf_threshold):
 
         output_video_path = tempfile.mktemp(suffix=".webm")
         out = cv2.VideoWriter(output_video_path, cv2.VideoWriter_fourcc(*'vp80'), fps, (frame_width, frame_height))
-
+        track_history = {}
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
                 break
 
-            results = model.predict(source=frame, imgsz=image_size, conf=conf_threshold,classes=[0])
+            # results = model.predict(source=frame, imgsz=image_size, conf=conf_threshold,classes=[0],tracker="bytetrack.yaml")
+            results = model.predict(source=frame, imgsz=image_size, conf=conf_threshold,classes=[0],tracker="botsort.yaml")
             annotated_frame = results[0].plot()
+            for box in results[0].boxes:
+                if hasattr(box, 'id') and box.id is not None:
+                    track_id = int(box.id.item())
+                    xyxy = box.xyxy[0].cpu().numpy().astype(int)
+                    center = ((xyxy[0] + xyxy[2]) // 2, (xyxy[1] + xyxy[3]) // 2)
+
+                    if track_id not in track_history:
+                        track_history[track_id] = []
+                    track_history[track_id].append(center)
+
+                    # Limit history length
+                    if len(track_history[track_id]) > 30:
+                        track_history[track_id].pop(0)
+
+                    # Draw path line
+                    for i in range(1, len(track_history[track_id])):
+                        cv2.line(
+                            annotated_frame,
+                            track_history[track_id][i - 1],
+                            track_history[track_id][i],
+                            (0, 255, 0),
+                            2
+                        )
             out.write(annotated_frame)
 
         cap.release()
