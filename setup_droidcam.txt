@@ -1,0 +1,182 @@
+#!/bin/bash
+
+# README
+# Purpose:
+#   This script sets up DroidCam with USB support and dependencies for a person detection
+#   project using YOLOv12n in the (flash) Conda environment. It installs the DroidCam client,
+#   v4l2loopback-dc for video, and Python packages, and verifies yolov12n.pt.
+#
+# Prerequisites:
+#   - Ubuntu-based Linux system (e.g., Ubuntu 21.04 or later).
+#   - Miniconda installed at ~/miniconda3.
+#   - Project directory: ~/workspace/hkn/CS671-HACKATHON.
+#   - sudo privileges for system package installation.
+#   - DroidCam app installed on your Android phone, connected via USB with USB debugging enabled.
+#   - Secure Boot disabled (required for v4l2loopback-dc driver signing).
+#
+# Usage:
+#   1. Save as setup_droidcam.sh in ~/workspace/hkn/CS671-HACKATHON.
+#   2. Make executable: chmod +x setup_droidcam.sh
+#   3. Run: ./setup_droidcam.sh
+#
+# Steps Performed:
+#   1. Installs DroidCam client, v4l2loopback-dc, libappindicator3-1, and adb for USB support.
+#   2. Advises disabling Secure Boot for v4l2loopback-dc.
+#   3. Sets up (flash) Conda environment with Python 3.11.
+#   4. Installs Python packages: ultralytics (via pip), opencv=4.9.0, numpy, huggingface_hub, torchvision=0.20.
+#   5. Verifies or downloads yolov12n.pt.
+#   6. Tests DroidCam connectivity via USB.
+#
+# Notes:
+#   - Only 64-bit binaries are provided for DroidCam. For 32-bit/ARM systems, compile from source.
+#   - If DroidCam is installed, ensure it’s not running during setup.
+#   - USB Debugging must be enabled on your Android phone (Settings > Developer Options > USB Debugging).
+#   - Secure Boot must be disabled to avoid v4l2loopback-dc signing issues.
+#
+# Troubleshooting:
+#   - DroidCam not detected: Ensure app is running, USB debugging is on, and adb is installed.
+#   - v4l2loopback-dc issues: Check lsmod | grep v4l2loopback_dc; disable Secure Boot.
+#   - Conda errors: Verify conda at ~/miniconda3; reinstall if needed.
+#   - Weights download failure: Manually download from https://github.com/ultralytics/ultralytics/releases
+#
+# END README
+
+# Exit on any error
+set -e
+
+# Define variables
+PROJECT_DIR="$HOME/workspace/hkn/CS671-HACKATHON"
+CONDA_ENV="flash"
+PYTHON_VERSION="3.11"
+MODEL_PATH="$PROJECT_DIR/yolov12n.pt"
+CONDA_PATH="$HOME/miniconda3/etc/profile.d/conda.sh"
+TMP_DIR="/tmp/droidcam_setup"
+
+# Step 1: Install system dependencies and DroidCam
+echo "Installing system dependencies and DroidCam..."
+
+# Ensure Secure Boot is disabled
+echo "WARNING: Secure Boot must be disabled for v4l2loopback-dc driver signing."
+echo "To disable Secure Boot, reboot, enter BIOS/UEFI, and turn off Secure Boot."
+echo "If you cannot disable Secure Boot, manually sign the driver (see 'Secure Boot Module Signing' for Ubuntu)."
+read -p "Is Secure Boot disabled? (y/n): " secure_boot_response
+if [ "$secure_boot_response" != "y" ]; then
+    echo "Error: Secure Boot must be disabled. Exiting."
+    exit 1
+fi
+
+sudo apt-get update
+sudo apt-get install -y wget unzip build-essential libasound2-dev libv4l-dev linux-headers-$(uname -r) gcc make libappindicator3-1 adb
+
+# Check if DroidCam is running
+if pgrep -x "droidcam" > /dev/null; then
+    echo "Error: DroidCam is running. Please close it before proceeding."
+    exit 1
+fi
+
+# Download and install DroidCam client
+mkdir -p "$TMP_DIR"
+cd "$TMP_DIR"
+if ! command -v droidcam &> /dev/null; then
+    echo "Installing DroidCam client..."
+    wget -O droidcam_latest.zip https://files.dev47apps.net/linux/droidcam_2.1.3.zip
+    unzip droidcam_latest.zip -d droidcam
+    cd droidcam
+    sudo ./install-client
+    sudo ./install-video || {
+        echo "Error: v4l2loopback-dc installation failed. Ensure Secure Boot is disabled."
+        exit 1
+    }
+else
+    echo "DroidCam client already installed."
+fi
+cd ~
+rm -rf "$TMP_DIR"
+
+# Ensure v4l2loopback-dc is loaded
+if ! lsmod | grep -q v4l2loopback_dc; then
+    echo "Loading v4l2loopback-dc module..."
+    sudo modprobe v4l2loopback-dc
+fi
+
+# Step 2: Set up Conda environment
+echo "Setting up Conda environment: $CONDA_ENV..."
+if [ ! -f "$CONDA_PATH" ]; then
+    echo "Error: Conda not found at $CONDA_PATH. Please install Miniconda/Anaconda."
+    exit 1
+fi
+
+source "$CONDA_PATH"
+if ! conda env list | grep -q "$CONDA_ENV"; then
+    echo "Creating Conda environment: $CONDA_ENV with Python $PYTHON_VERSION..."
+    conda create -n "$CONDA_ENV" python="$PYTHON_VERSION" -y
+else
+    echo "Conda environment $CONDA_ENV already exists."
+fi
+
+conda activate "$CONDA_ENV"
+
+# Step 3: Install Python dependencies
+echo "Installing Python dependencies..."
+conda install -y opencv=4.9.0 numpy huggingface_hub
+pip install ultralytics torchvision==0.20
+
+# Verify installations
+echo "Verifying Python dependencies..."
+python -m pip list | grep -E "ultralytics|opencv|numpy|huggingface_hub|torchvision"
+
+# Step 4: Verify or download YOLOv12n weights
+echo "Checking for YOLOv12n weights..."
+if [ ! -f "$MODEL_PATH" ]; then
+    echo "Downloading yolov12n.pt to $MODEL_PATH..."
+    wget -O "$MODEL_PATH" https://github.com/ultralytics/ultralytics/releases/download/v8.3.124/yolov12n.pt || {
+        echo "Error: Failed to download yolov12n.pt. Please download manually from:"
+        echo "https://github.com/ultralytics/ultralytics/releases"
+        exit 1
+    }
+else
+    echo "YOLOv12n weights found at $MODEL_PATH."
+fi
+
+# Step 5: Test DroidCam connectivity (USB)
+echo "Testing DroidCam connectivity via USB..."
+echo "Ensure DroidCam app is running on your phone with USB debugging enabled."
+echo "To enable USB debugging: Settings > About Phone > Tap Build Number 7 times > Developer Options > Enable USB Debugging."
+cat << EOF > "$PROJECT_DIR/test_droidcam.py"
+import cv2
+cap = cv2.VideoCapture(0)
+if not cap.isOpened():
+    print("Error: Could not open DroidCam.")
+    exit(1)
+ret, frame = cap.read()
+if ret:
+    print("DroidCam is working. Displaying test frame...")
+    cv2.imshow('DroidCam Test', frame)
+    cv2.waitKey(0)
+else:
+    print("Error: Could not read frame from DroidCam.")
+cap.release()
+cv2.destroyAllWindows()
+EOF
+
+# Test USB connection with adb
+adb devices || {
+    echo "Error: adb not working. Ensure USB debugging is enabled and phone is connected."
+    exit 1
+}
+python "$PROJECT_DIR/test_droidcam.py" || {
+    echo "Error: DroidCam test failed."
+    echo "1. Ensure DroidCam app is running and USB debugging is enabled."
+    echo "2. Check adb devices: adb devices"
+    echo "3. If multiple devices, set ANDROID_SERIAL: export ANDROID_SERIAL=<device_id>; droidcam-cli adb 4747"
+    exit 1
+}
+rm "$PROJECT_DIR/test_droidcam.py"
+
+# Final message
+echo "Setup complete! To run person detection:"
+echo "1. Activate environment: conda activate $CONDA_ENV"
+echo "2. Ensure DroidCam app is running and USB debugging is enabled."
+echo "3. Run: cd $PROJECT_DIR && python person_detection.py"
+echo "If multiple USB devices, list devices with 'adb devices' and set:"
+echo "export ANDROID_SERIAL=<device_id>; droidcam-cli adb 4747"
