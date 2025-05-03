@@ -10,6 +10,8 @@ from PIL import Image
 import tempfile
 import os
 import time
+from collections import defaultdict
+from ultralytics.solutions.heatmap import Heatmap
 
 def yolov12_inference(image=None, video=None, model_path='yolov12m.pt', image_size=640, conf_threshold=0.25):
     """
@@ -180,8 +182,7 @@ def yolov12_tracker_inference(image, video, model_id, image_size, conf_threshold
     model = YOLO(model_id)
     model.model.classes = [0]
     if image:
-        results = model.predict(source=image, imgsz=image_size, conf=conf_threshold,classes=[0],tracker="bytetrack.yaml")
-        # results = model.predict(source=image, imgsz=image_size, conf=conf_threshold,classes=[0],tracker="botsort.yaml")
+        results = model.predict(source=image, imgsz=image_size, conf=conf_threshold, classes=[0], tracker="bytetrack.yaml")
         annotated_image = results[0].plot()
         return annotated_image[:, :, ::-1], None
     else:
@@ -197,49 +198,37 @@ def yolov12_tracker_inference(image, video, model_id, image_size, conf_threshold
 
         output_video_path = tempfile.mktemp(suffix=".webm")
         out = cv2.VideoWriter(output_video_path, cv2.VideoWriter_fourcc(*'vp80'), fps, (frame_width, frame_height))
-        track_history = {}
+
+        track_history = defaultdict(list)
+
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
                 break
 
-            results = model.track(source=frame, imgsz=image_size, conf=conf_threshold, classes=[0], tracker="bytetrack.yaml")
-            annotated_frame = results[0].plot()
+            results = model.track(frame, persist=True, imgsz=image_size, conf=conf_threshold, classes=[0], tracker="bytetrack.yaml")[0]
 
-            # Draw tracking lines and IDs
-            for box in results[0].boxes:
-                if hasattr(box, 'id') and box.id is not None:
-                    track_id = int(box.id.item())
-                    xyxy = box.xyxy[0].cpu().numpy().astype(int)
-                    center = ((xyxy[0] + xyxy[2]) // 2, (xyxy[1] + xyxy[3]) // 2)
+            if results.boxes and results.boxes.id is not None:
+                boxes = results.boxes.xywh.cpu()
+                track_ids = results.boxes.id.int().cpu().tolist()
 
-                    if track_id not in track_history:
-                        track_history[track_id] = []
-                    track_history[track_id].append(center)
+                annotated_frame = results.plot()
 
-                    # Limit history length
-                    if len(track_history[track_id]) > 30:
-                        track_history[track_id].pop(0)
+                for box, track_id in zip(boxes, track_ids):
+                    x, y, w, h = box
+                    track = track_history[track_id]
+                    track.append((int(x), int(y)))  # x, y center point
+                    if len(track) > 30:
+                        track.pop(0)
 
-                    # Draw path line
-                    for i in range(1, len(track_history[track_id])):
-                        cv2.line(
-                            annotated_frame,
-                            track_history[track_id][i - 1],
-                            track_history[track_id][i],
-                            (0, 255, 0),
-                            2)
-                    cv2.putText(
-                        annotated_frame,
-                        f'ID: {track_id}',
-                        (center[0] - 10, center[1] - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.6,
-                        (0, 255, 255),
-                        2,
-                        cv2.LINE_AA
-                    )
-            out.write(annotated_frame)
+                    # Draw the tracking lines
+                    points = np.array(track, dtype=np.int32).reshape((-1, 1, 2))
+                    if len(points) > 1:
+                        cv2.polylines(annotated_frame, [points], isClosed=False, color=(230, 230, 230), thickness=2)
+
+                out.write(annotated_frame)
+            else:
+                out.write(frame)
 
         cap.release()
         out.release()
