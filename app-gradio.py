@@ -9,7 +9,7 @@ import tempfile
 from ultralytics import YOLO
 
 
-def yolov12_inference(image, video, model_id, image_size, conf_threshold):
+def yolov12_tracker_inference(image, video, model_id, image_size, conf_threshold):
     model = YOLO(model_id)
     model.model.classes = [0]
     if image:
@@ -81,7 +81,7 @@ def yolov12_inference(image, video, model_id, image_size, conf_threshold):
 
 
 def yolov12_inference_for_examples(image, model_path, image_size, conf_threshold):
-    annotated_image, _ = yolov12_inference(image, None, model_path, image_size, conf_threshold)
+    annotated_image, _ = yolov12_tracker_inference(image, None, model_path, image_size, conf_threshold)
     return annotated_image
 
 
@@ -143,9 +143,9 @@ def app():
 
         def run_inference(image, video, model_id, image_size, conf_threshold, input_type):
             if input_type == "Image":
-                return yolov12_inference(image, None, model_id, image_size, conf_threshold)
+                return yolov12_tracker_inference(image, None, model_id, image_size, conf_threshold)
             else:
-                return yolov12_inference(None, video, model_id, image_size, conf_threshold)
+                return yolov12_tracker_inference(None, video, model_id, image_size, conf_threshold)
 
 
         yolov12_infer.click(

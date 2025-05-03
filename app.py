@@ -176,6 +176,111 @@ def yolov12_inference(image=None, video=None, model_path='yolov12m.pt', image_si
         st.error(traceback.format_exc())
         return None
 
+def yolov12_tracker_inference(image, video, model_id, image_size, conf_threshold):
+    model = YOLO(model_id)
+    model.model.classes = [0]
+    if image:
+        results = model.predict(source=image, imgsz=image_size, conf=conf_threshold,classes=[0],tracker="bytetrack.yaml")
+        # results = model.predict(source=image, imgsz=image_size, conf=conf_threshold,classes=[0],tracker="botsort.yaml")
+        annotated_image = results[0].plot()
+        return annotated_image[:, :, ::-1], None
+    else:
+        video_path = tempfile.mktemp(suffix=".webm")
+        with open(video_path, "wb") as f:
+            with open(video, "rb") as g:
+                f.write(g.read())
+
+        cap = cv2.VideoCapture(video_path)
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+        output_video_path = tempfile.mktemp(suffix=".webm")
+        out = cv2.VideoWriter(output_video_path, cv2.VideoWriter_fourcc(*'vp80'), fps, (frame_width, frame_height))
+        track_history = {}
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
+
+            results = model.track(source=frame, imgsz=image_size, conf=conf_threshold, classes=[0], tracker="bytetrack.yaml")
+            annotated_frame = results[0].plot()
+
+            # Draw tracking lines and IDs
+            for box in results[0].boxes:
+                if hasattr(box, 'id') and box.id is not None:
+                    track_id = int(box.id.item())
+                    xyxy = box.xyxy[0].cpu().numpy().astype(int)
+                    center = ((xyxy[0] + xyxy[2]) // 2, (xyxy[1] + xyxy[3]) // 2)
+
+                    if track_id not in track_history:
+                        track_history[track_id] = []
+                    track_history[track_id].append(center)
+
+                    # Limit history length
+                    if len(track_history[track_id]) > 30:
+                        track_history[track_id].pop(0)
+
+                    # Draw path line
+                    for i in range(1, len(track_history[track_id])):
+                        cv2.line(
+                            annotated_frame,
+                            track_history[track_id][i - 1],
+                            track_history[track_id][i],
+                            (0, 255, 0),
+                            2)
+                    cv2.putText(
+                        annotated_frame,
+                        f'ID: {track_id}',
+                        (center[0] - 10, center[1] - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.6,
+                        (0, 255, 255),
+                        2,
+                        cv2.LINE_AA
+                    )
+            out.write(annotated_frame)
+
+        cap.release()
+        out.release()
+
+        return None, output_video_path
+
+def yolov12_heatmap_inference(image, video, model_id, image_size, conf_threshold):
+    if image:
+        # For images, just run normal detection (optional: add heatmap for single image)
+        return image, None
+    else:
+        video_path = tempfile.mktemp(suffix=".webm")
+        with open(video_path, "wb") as f:
+            with open(video, "rb") as g:
+                f.write(g.read())
+
+        cap = cv2.VideoCapture(video_path)
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+        output_video_path = tempfile.mktemp(suffix=".webm")
+        out = cv2.VideoWriter(output_video_path, cv2.VideoWriter_fourcc(*'vp80'), fps, (frame_width, frame_height))
+
+        # Initialize Heatmap with your model
+        heatmap = Heatmap(model=model_id, imgsz=image_size, conf=conf_threshold, classes=[0])
+
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
+
+            # This will run detection+tracking and overlay the heatmap
+            heatmap_frame = heatmap.generate_heatmap(frame)
+            out.write(heatmap_frame)
+
+        cap.release()
+        out.release()
+
+        return None, output_video_path
+    
 def check_backend_availability():
     """
     Check if backend services are available
