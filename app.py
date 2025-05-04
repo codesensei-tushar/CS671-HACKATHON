@@ -1,444 +1,279 @@
-# --------------------------------------------------------
-# Based on YOLOv10/YOLOv12 Gradio Implementation
-# --------------------------------------------------------
-
-import streamlit as st
+import threading
+import gradio as gr
 import cv2
-import numpy as np
-from ultralytics import YOLO
-from PIL import Image
 import tempfile
-import os
-import time
-from collections import defaultdict
+from ultralytics import YOLO
 from ultralytics.solutions.heatmap import Heatmap
+from PIL import Image
+import numpy as np
+from collections import defaultdict
 
-def yolov12_inference(image=None, video=None, model_path='yolov12m.pt', image_size=640, conf_threshold=0.25):
-    """
-    Perform YOLOv12 inference on an image or video
-    
-    Args:
-        image (np.ndarray/PIL.Image, optional): Input image
-        video (str, optional): Path to input video
-        model_path (str): Path to YOLOv12 model
-        image_size (int): Inference image size
-        conf_threshold (float): Confidence threshold
-    
-    Returns:
-        tuple: Annotated image/video (depends on input type)
-    """
-    try:
-        # Validate input video
-        if video is not None:
-            # Detailed video validation for MP4
-            cap = cv2.VideoCapture(video)
-            if not cap.isOpened():
-                st.error(f"Cannot open MP4 video file: {video}")
-                return None
-            
-            # Detailed video properties
-            fps = cap.get(cv2.CAP_PROP_FPS)
-            frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-            frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-            
-            # Validate MP4 video properties
-            st.write("MP4 Video Validation:")
-            st.write(f"- Resolution: {frame_width}x{frame_height}")
-            st.write(f"- FPS: {fps}")
-            st.write(f"- Total Frames: {total_frames}")
-            
-            # Strict validation for MP4
-            if fps <= 0 or frame_width <= 0 or frame_height <= 0 or total_frames == 0:
-                st.error("Invalid MP4 video properties. Cannot process the video.")
-                cap.release()
-                return None
-        
-        # Load model
-        model = YOLO(model_path)
-        model.model.classes = [0]
+def ensure_numpy_image(image):
+    if hasattr(image, 'read') or hasattr(image, 'name'):
+        image = Image.open(image)
+    if isinstance(image, Image.Image):
+        image = np.array(image.convert('RGB'))
+    return image
 
-        # Image processing
-        if image is not None:
-            # Ensure image is in the right format
-            if isinstance(image, Image.Image):
-                image = np.array(image)
-            
-            # Convert image to 3-channel if it's not already
-            if image.shape[2] == 4:  # RGBA
-                image = cv2.cvtColor(image, cv2.COLOR_RGBA2RGB)
-            elif len(image.shape) == 2:  # Grayscale
-                image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
-            
-            # Ensure image is in the correct format for YOLO
-            if image.shape[2] != 3:
-                st.error(f"Unexpected image format. Shape: {image.shape}")
-                return None
+def draw_dots_on_frame(frame, results, min_conf=0.3, min_box_area=0, track_history=None, tracking_enabled=False):
+    annotated = frame.copy()
+    for box in results[0].boxes:
+        conf = float(box.conf)
+        x1, y1, x2, y2 = map(int, box.xyxy[0])
+        area = (x2 - x1) * (y2 - y1)
+        if conf < min_conf or area < min_box_area:
+            continue
+        cx, cy = (x1 + x2) // 2, (y1 + y2) // 2
+        cv2.circle(annotated, (cx, cy), 7, (0, 0, 255), -1)
+        # Draw trajectory if tracking is enabled and ID is present
+        if tracking_enabled and hasattr(box, 'id') and box.id is not None and track_history is not None:
+            track_id = int(box.id.item())
+            if track_id not in track_history:
+                track_history[track_id] = []
+            track_history[track_id].append((cx, cy))
+            if len(track_history[track_id]) > 30:  # Limit history length
+                track_history[track_id].pop(0)
+            # Draw the trajectory line
+            for i in range(1, len(track_history[track_id])):
+                cv2.line(
+                    annotated,
+                    track_history[track_id][i - 1],
+                    track_history[track_id][i],
+                    (0, 255, 0),
+                    2
+                )
+    return annotated
 
-            # Run inference on image
-            results = model.predict(
-                source=image, 
-                imgsz=image_size, 
-                conf=conf_threshold,
-                classes=[0]
-            )
-            
-            # Plot annotated image
-            annotated_image = results[0].plot()
-            return annotated_image[:, :, ::-1]  # Convert BGR to RGB
-        
-        # Video processing for MP4
-        elif video is not None:
-            # Open the video
-            cap = cv2.VideoCapture(video)
-            
-            # Get video properties
-            fps = cap.get(cv2.CAP_PROP_FPS)
-            frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-            frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-            
-            # Create temporary output video file with full path
-            output_video_path = os.path.join(tempfile.gettempdir(), f"annotated_video_{int(time.time())}.mp4")
-            
-            # Try multiple codecs for better compatibility
-            codecs = [
-                ('H264', cv2.VideoWriter_fourcc(*'X264')),  # H.264
-                ('mp4v', cv2.VideoWriter_fourcc(*'mp4v')),  # MPEG-4
-                ('avc1', cv2.VideoWriter_fourcc(*'avc1'))   # Another H.264 variant
-            ]
-            
-            out = None
-            for codec_name, fourcc in codecs:
-                try:
-                    out = cv2.VideoWriter(output_video_path, fourcc, fps, (frame_width, frame_height))
-                    if out.isOpened():
-                        st.write(f"Using {codec_name} codec for video writing")
-                        break
-                except Exception as codec_err:
-                    st.write(f"Failed to use {codec_name} codec: {codec_err}")
-            
-            if out is None or not out.isOpened():
-                st.error("Could not create video writer with any available codec")
-                cap.release()
-                return None
-            
-            # Process video frames
-            frame_count = 0
-            max_frames = 300  # Limit to prevent extremely long processing
-            processed_frames = []
-            
-            while cap.isOpened():
-                ret, frame = cap.read()
-                if not ret or frame_count >= max_frames:
-                    break
-                
-                try:
-                    # Run inference on each frame
-                    results = model.predict(
-                        source=frame, 
-                        imgsz=image_size, 
-                        conf=conf_threshold,
-                        classes=[0]
-                    )
-                    
-                    # Plot annotated frame
-                    annotated_frame = results[0].plot()
-                    
-                    # Ensure the frame is in the correct color space for writing
-                    if annotated_frame.shape[2] == 4:  # RGBA
-                        annotated_frame = cv2.cvtColor(annotated_frame, cv2.COLOR_RGBA2RGB)
-                    
-                    out.write(annotated_frame)
-                    processed_frames.append(annotated_frame)
-                    frame_count += 1
-                
-                except Exception as frame_err:
-                    st.error(f"Error processing MP4 frame {frame_count}: {frame_err}")
-                    break
-            
-            # Release resources
-            cap.release()
-            out.release()
-            
-            # Verify MP4 file was created and has content
-            if os.path.exists(output_video_path) and os.path.getsize(output_video_path) > 0:
-                st.write(f"Successfully processed {frame_count} frames in MP4")
-                return output_video_path
-            else:
-                st.error(f"Failed to create MP4 video. Processed frames: {len(processed_frames)}")
-                return None
-        
-        else:
-            st.error("No image or video provided")
-            return None
-    
-    except Exception as e:
-        st.error(f"MP4 Video Processing Error: {e}")
-        import traceback
-        st.error(traceback.format_exc())
-        return None
-
-def yolov12_tracker_inference(image, video, model_id, image_size, conf_threshold):
+def yolov12_tracker_inference(image, video, model_id, image_size, conf_threshold, mode, viz_mode, use_tracking):
     model = YOLO(model_id)
     model.model.classes = [0]
-    if image:
-        results = model.predict(source=image, imgsz=image_size, conf=conf_threshold, classes=[0], tracker="bytetrack.yaml")
-        annotated_image = results[0].plot()
-        return annotated_image[:, :, ::-1], None
-    else:
-        video_path = tempfile.mktemp(suffix=".webm")
-        with open(video_path, "wb") as f:
-            with open(video, "rb") as g:
-                f.write(g.read())
-
-        cap = cv2.VideoCapture(video_path)
-        fps = cap.get(cv2.CAP_PROP_FPS)
-        frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-
-        output_video_path = tempfile.mktemp(suffix=".webm")
-        out = cv2.VideoWriter(output_video_path, cv2.VideoWriter_fourcc(*'vp80'), fps, (frame_width, frame_height))
-
-        track_history = defaultdict(list)
-
-        while cap.isOpened():
-            ret, frame = cap.read()
-            if not ret:
-                break
-
-            results = model.track(frame, persist=True, imgsz=image_size, conf=conf_threshold, classes=[0], tracker="bytetrack.yaml")[0]
-
-            if results.boxes and results.boxes.id is not None:
-                boxes = results.boxes.xywh.cpu()
-                track_ids = results.boxes.id.int().cpu().tolist()
-
-                annotated_frame = results.plot()
-
-                for box, track_id in zip(boxes, track_ids):
-                    x, y, w, h = box
-                    track = track_history[track_id]
-                    track.append((int(x), int(y)))  # x, y center point
-                    if len(track) > 30:
-                        track.pop(0)
-
-                    # Draw the tracking lines
-                    points = np.array(track, dtype=np.int32).reshape((-1, 1, 2))
-                    if len(points) > 1:
-                        cv2.polylines(annotated_frame, [points], isClosed=False, color=(230, 230, 230), thickness=2)
-
-                out.write(annotated_frame)
+    # Only boxes/dots for now, viz_mode is passed for future use
+    if mode == "Detection":
+        if image is not None:
+            image = ensure_numpy_image(image)
+            results = model.predict(source=image, imgsz=image_size, conf=conf_threshold, classes=[0])
+            if viz_mode == "Dots":
+                annotated_image = draw_dots_on_frame(image, results)
             else:
-                out.write(frame)
+                annotated_image = results[0].plot()
+            count = len(results[0].boxes)
+            return annotated_image[:, :, ::-1], None, count, f"Detected: {count} people"
+        elif video is not None:
+            video_path = tempfile.mktemp(suffix=".mp4")
+            with open(video_path, "wb") as f:
+                with open(video.name, "rb") as g:
+                    f.write(g.read())
+            cap = cv2.VideoCapture(video_path)
+            fps = cap.get(cv2.CAP_PROP_FPS)
+            frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            output_video_path = tempfile.mktemp(suffix="_det.mp4")
+            out = cv2.VideoWriter(output_video_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (frame_width, frame_height))
+            max_count = 0
+            track_history = {}  # Only for Dots+Detection+video
+            while cap.isOpened():
+                ret, frame = cap.read()
+                if not ret:
+                    break
+                results = model.predict(source=frame, imgsz=image_size, conf=conf_threshold, classes=[0])
+                count = len(results[0].boxes)
+                if count > max_count:
+                    max_count = count
+                if viz_mode == "Dots":
+                    annotated_frame = draw_dots_on_frame(frame, results, track_history=track_history, tracking_enabled=True)
+                else:
+                    annotated_frame = results[0].plot()
+                out.write(annotated_frame)
+            cap.release()
+            out.release()
+            return None, output_video_path, max_count, f"Max pedestrians in a frame: {max_count}"
+    elif mode == "Tracking":
+        if image is not None:
+            image = ensure_numpy_image(image)
+            results = model.predict(source=image, imgsz=image_size, conf=conf_threshold, classes=[0], tracker="bytetrack.yaml")
+            if viz_mode == "Dots":
+                annotated_image = draw_dots_on_frame(image, results)
+            else:
+                annotated_image = results[0].plot()
+            count = len(results[0].boxes)
+            return annotated_image[:, :, ::-1], None, count, f"Tracked: {count} people"
+        elif video is not None:
+            video_path = tempfile.mktemp(suffix=".mp4")
+            with open(video_path, "wb") as f:
+                with open(video.name, "rb") as g:
+                    f.write(g.read())
+            cap = cv2.VideoCapture(video_path)
+            fps = cap.get(cv2.CAP_PROP_FPS)
+            frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            output_video_path = tempfile.mktemp(suffix="_track.mp4")
+            out = cv2.VideoWriter(output_video_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (frame_width, frame_height))
+            track_history = defaultdict(list)
+            max_count = 0
+            while cap.isOpened():
+                ret, frame = cap.read()
+                if not ret:
+                    break
+                results = model.track(frame, persist=True, imgsz=image_size, conf=conf_threshold, classes=[0], tracker="bytetrack.yaml")[0]
+                if results.boxes and results.boxes.id is not None:
+                    boxes = results.boxes.xywh.cpu()
+                    track_ids = results.boxes.id.int().cpu().tolist()
+                    annotated_frame = results.plot()
+                    for box, track_id in zip(boxes, track_ids):
+                        x, y, w, h = box
+                        track = track_history[track_id]
+                        track.append((int(x), int(y)))  # x, y center point
+                        if len(track) > 30:
+                            track.pop(0)
+                        # Draw the tracking lines
+                        points = np.array(track, dtype=np.int32).reshape((-1, 1, 2))
+                        if len(points) > 1:
+                            cv2.polylines(annotated_frame, [points], isClosed=False, color=(230, 230, 230), thickness=2)
+                    out.write(annotated_frame)
+                    if len(track_ids) > max_count:
+                        max_count = len(track_ids)
+                else:
+                    out.write(frame)
+            cap.release()
+            out.release()
+            return None, output_video_path, max_count, f"Max pedestrians in a frame: {max_count}"
+    elif mode == "Heatmap":
+        if image is not None:
+            image = ensure_numpy_image(image)
+            # For images, just run normal detection (optional: add heatmap for single image)
+            return image, None, 0, "Heatmap for image not implemented"
+        elif video is not None:
+            video_path = tempfile.mktemp(suffix=".mp4")
+            with open(video_path, "wb") as f:
+                with open(video.name, "rb") as g:
+                    f.write(g.read())
+            cap = cv2.VideoCapture(video_path)
+            fps = cap.get(cv2.CAP_PROP_FPS)
+            frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            output_video_path = tempfile.mktemp(suffix="_heatmap.mp4")
+            out = cv2.VideoWriter(output_video_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (frame_width, frame_height))
+            # Initialize Heatmap with your model
+            heatmap = Heatmap(model=model_id, imgsz=image_size, conf=conf_threshold, classes=[0])
+            while cap.isOpened():
+                ret, frame = cap.read()
+                if not ret:
+                    break
+                # This will run detection+tracking and overlay the heatmap
+                heatmap_frame = heatmap.generate_heatmap(frame)
+                out.write(heatmap_frame)
+            cap.release()
+            out.release()
+            return None, output_video_path, 0, "Heatmap complete"
+    return None, None, 0, "No input provided"
 
-        cap.release()
-        out.release()
+def yolov12_inference_for_examples(image, model_path, image_size, conf_threshold):
+    annotated_image, _ = yolov12_tracker_inference(image, None, model_path, image_size, conf_threshold, "Detection", "Boxes", False)
+    return annotated_image
 
-        return None, output_video_path
+with gr.Blocks(theme=gr.themes.Soft()) as demo:
+    with gr.Row():
+        # Sidebar
+        with gr.Column(scale=0.3, min_width=320):
+            gr.Markdown("## Controls")
+            model_id = gr.Dropdown(
+                label="Model",
+                choices=[
+                    "yolov12n.pt",
+                    "yolov12s.pt",
+                    "yolov12m.pt",
+                    "yolov12l.pt",
+                    "yolov12x.pt",
+                    "best.pt"
+                ],
+                value="best.pt",
+            )
+            image_size = gr.Slider(
+                label="Image Size",
+                minimum=320,
+                maximum=1280,
+                step=32,
+                value=640,
+            )
+            conf_threshold = gr.Slider(
+                label="Confidence Threshold",
+                minimum=0.0,
+                maximum=1.0,
+                step=0.05,
+                value=0.25,
+            )
+            mode = gr.Radio(["Detection", "Tracking", "Heatmap"], value="Detection", label="Mode")
+            input_type = gr.Radio(["Image", "Video"], value="Image", label="Input Type")
+            viz_mode = gr.Radio(["Boxes", "Dots"], value="Boxes", label="Visualization Mode")
+            use_tracking = gr.Checkbox(label="Enable Tracking", value=False)
+            run_btn = gr.Button("Run Inference")
+        # Main content
+        with gr.Column(scale=0.7):
+            gr.Markdown("<h1 style='text-align: center; color: #20e3c2;'>YOLOV12 PEDESTRIAN DETECTION</h1>")
+            upload = gr.File(label="Upload an image or video", file_types=[".jpg", ".jpeg", ".png", ".mp4", ".avi", ".mov", ".webm"])
+            output_image = gr.Image(type="numpy", label="Processed Image", visible=True)
+            output_video = gr.Video(label="Processed Video", visible=False)
+            metrics = gr.Textbox(label="Metrics / Info", interactive=False)
+            count_box = gr.Number(value=0, label="Pedestrian Count", interactive=False, precision=0)
 
-def yolov12_heatmap_inference(image, video, model_id, image_size, conf_threshold):
-    if image:
-        # For images, just run normal detection (optional: add heatmap for single image)
-        return image, None
-    else:
-        video_path = tempfile.mktemp(suffix=".webm")
-        with open(video_path, "wb") as f:
-            with open(video, "rb") as g:
-                f.write(g.read())
-
-        cap = cv2.VideoCapture(video_path)
-        fps = cap.get(cv2.CAP_PROP_FPS)
-        frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-
-        output_video_path = tempfile.mktemp(suffix=".webm")
-        out = cv2.VideoWriter(output_video_path, cv2.VideoWriter_fourcc(*'vp80'), fps, (frame_width, frame_height))
-
-        # Initialize Heatmap with your model
-        heatmap = Heatmap(model=model_id, imgsz=image_size, conf=conf_threshold, classes=[0])
-
-        while cap.isOpened():
-            ret, frame = cap.read()
-            if not ret:
-                break
-
-            # This will run detection+tracking and overlay the heatmap
-            heatmap_frame = heatmap.generate_heatmap(frame)
-            out.write(heatmap_frame)
-
-        cap.release()
-        out.release()
-
-        return None, output_video_path
-    
-def check_backend_availability():
-    """
-    Check if backend services are available
-    
-    Returns:
-        bool: True if backend is available, False otherwise
-    """
-    # Placeholder for backend availability check
-    # In a real-world scenario, this would check actual backend services
-    return False
-
-def main():
-    st.title("YOLOv12: Attention-Centric Object Detection")
-    
-    # Sidebar for configuration
-    st.sidebar.header("Detection Settings")
-    
-    # Model selection
-    model_options = [
-        "yolov12n.pt", 
-        "yolov12s.pt", 
-        "yolov12m.pt", 
-        "yolov12l.pt", 
-        "yolov12x.pt"
-    ]
-    selected_model = st.sidebar.selectbox("Select Model", model_options, index=2)
-    
-    # Image size and confidence threshold
-    image_size = st.sidebar.slider(
-        "Image Size", 
-        min_value=320, 
-        max_value=1280, 
-        value=640, 
-        step=32
-    )
-    conf_threshold = st.sidebar.slider(
-        "Confidence Threshold", 
-        min_value=0.0, 
-        max_value=1.0, 
-        value=0.25, 
-        step=0.05
-    )
-    
-    # Detection mode selection
-    detection_mode = st.sidebar.selectbox(
-        "Detection Mode", 
-        ["Image", "Video"]
-    )
-    
-    # Backend availability check
-    backend_available = check_backend_availability()
-    
-    if detection_mode == "Image":
-        # File uploader for image
-        uploaded_file = st.file_uploader(
-            "Choose an image", 
-            type=["jpg", "jpeg", "png"]
+    def update_outputs(input_type):
+        return (
+            gr.update(visible=input_type == "Image"),
+            gr.update(visible=input_type == "Video"),
         )
-        
-        if uploaded_file is not None:
-            # Read the image
-            try:
-                image = Image.open(uploaded_file)
-                
-                # Display original image
-                st.image(image, caption="Original Image", use_column_width=True)
-                
-                # Detect button
-                if st.button("Detect Objects"):
-                    with st.spinner('Running inference...'):
-                        # Perform inference
-                        annotated_image = yolov12_inference(
-                            image=image, 
-                            model_path=selected_model, 
-                            image_size=image_size, 
-                            conf_threshold=conf_threshold
-                        )
-                        
-                        if annotated_image is not None:
-                            st.image(
-                                annotated_image, 
-                                caption=f"Detected Objects (Model: {selected_model})", 
-                                use_column_width=True
-                            )
-                        else:
-                            st.error("Failed to perform object detection")
-            
-            except Exception as e:
-                st.error(f"Error processing image: {e}")
-    
-    elif detection_mode == "Video":
-        # Video file uploader
-        uploaded_video = st.file_uploader(
-            "Choose a video", 
-            type=["mp4", "avi", "mov"]
-        )
-        
-        if uploaded_video is not None:
-            # Temporary save the uploaded video
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp_file:
-                tmp_file.write(uploaded_video.getvalue())
-                video_path = tmp_file.name
-            
-            try:
-                # Validate video file
-                cap = cv2.VideoCapture(video_path)
-                if not cap.isOpened():
-                    st.error("Unable to read the video file. Please check the file format.")
-                    cap.release()
-                    os.unlink(video_path)
-                    st.stop()
-                
-                # Get video properties
-                fps = cap.get(cv2.CAP_PROP_FPS)
-                frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-                cap.release()
-                
-                # Display video information
-                st.write(f"Video Details:")
-                st.write(f"- FPS: {fps}")
-                st.write(f"- Total Frames: {frame_count}")
-                
-                # Display original video
-                st.video(video_path)
-                
-                if st.button("Detect Objects in Video"):
-                    with st.spinner('Running video inference...'):
-                        # Perform video inference
-                        output_video_path = yolov12_inference(
-                            video=video_path, 
-                            model_path=selected_model, 
-                            image_size=image_size, 
-                            conf_threshold=conf_threshold
-                        )
-                        
-                        if output_video_path is not None and os.path.exists(output_video_path):
-                            # Verify video file
-                            video_size = os.path.getsize(output_video_path)
-                            st.write(f"Annotated Video Size: {video_size / 1024:.2f} KB")
-                            
-                            # Read video file for display
-                            with open(output_video_path, 'rb') as video_file:
-                                video_bytes = video_file.read()
-                            
-                            # Display annotated video
-                            st.video(video_bytes)
-                            
-                            # Provide download option
-                            st.download_button(
-                                label="Download Annotated Video",
-                                data=video_bytes,
-                                file_name="annotated_video.mp4",
-                                mime="video/mp4"
-                            )
-                            
-                            # Clean up temporary files
-                            try:
-                                os.unlink(video_path)
-                                os.unlink(output_video_path)
-                            except Exception as cleanup_err:
-                                st.error(f"Error cleaning up temporary files: {cleanup_err}")
-                        else:
-                            st.error("Failed to create annotated video. Please try again with a different video or settings.")
-            
-            except Exception as e:
-                st.error(f"Error processing video: {e}")
-                # Ensure temporary files are cleaned up
-                if 'video_path' in locals() and os.path.exists(video_path):
-                    os.unlink(video_path)
 
-if __name__ == "__main__":
-    main()
+    input_type.change(
+        fn=update_outputs,
+        inputs=[input_type],
+        outputs=[output_image, output_video],
+    )
+
+    def run_all(upload, model_id, image_size, conf_threshold, mode, input_type, viz_mode, use_tracking):
+        if input_type == "Image":
+            if upload is not None:
+                image = upload if upload.name.lower().endswith((".jpg", ".jpeg", ".png")) else None
+                img, vid, count, info = yolov12_tracker_inference(image, None, model_id, image_size, conf_threshold, mode, viz_mode, use_tracking)
+                return img, None, info, count
+            else:
+                return None, None, "No image uploaded", 0
+        else:
+            if upload is not None:
+                video = upload if upload.name.lower().endswith((".mp4", ".avi", ".mov", ".webm")) else None
+                img, vid, count, info = yolov12_tracker_inference(None, video, model_id, image_size, conf_threshold, mode, viz_mode, use_tracking)
+                return None, vid, info, count
+            else:
+                return None, None, "No video uploaded", 0
+
+    run_btn.click(
+        fn=run_all,
+        inputs=[upload, model_id, image_size, conf_threshold, mode, input_type, viz_mode, use_tracking],
+        outputs=[output_image, output_video, metrics, count_box],
+    )
+
+    gr.Examples(
+        examples=[
+            [
+                "ultralytics/assets/bus.jpg",
+                "yolov12s.pt",
+                640,
+                0.25,
+            ],
+            [
+                "ultralytics/assets/zidane.jpg",
+                "yolov12x.pt",
+                640,
+                0.25,
+            ],
+        ],
+        fn=yolov12_inference_for_examples,
+        inputs=[
+            upload,
+            model_id,
+            image_size,
+            conf_threshold,
+        ],
+        outputs=[output_image],
+        cache_examples='lazy',
+    )
+
+demo.launch()  
