@@ -39,7 +39,7 @@ Follow these steps to set up and run CrowdFlow locally:
 ### Steps
 1. **Clone the Repository**:
    ```bash
-   git clone <your-repository-url>
+   git clone (https://github.com/codesensei-tushar/CS671-HACKATHON)
    cd CrowdFlow
    ```
 
@@ -93,7 +93,7 @@ Follow these steps to set up and run CrowdFlow locally:
 
 ## 🧑‍💻 Technologies Used
 - **YOLOv8**: Core object detection model ([Ultralytics](https://github.com/ultralytics/ultralytics)).
-- **Pre-Trained Model**: Sourced from [IIT Mandi Hackathon](https://github.com/anuragpandey382/IITMandiHackathon).
+- **Pre-Trained Model**: Sourced from [GitHub repo](https://github.com/Abcfsa/YOLOv8_head_detector)..
 - **Gradio**: For the interactive web interface.
 - **Conda**: Environment management via `environment.yml`.
 - **Python**: Backend logic and video processing.
@@ -107,7 +107,7 @@ CrowdFlow excels at detecting and tracking individuals in dense crowds, with rel
 
 ## 🙌 Acknowledgements
 - [Ultralytics](https://github.com/ultralytics/ultralytics) for the YOLOv8 framework.
-- [IIT Mandi Hackathon](https://github.com/anuragpandey382/IITMandiHackathon) for the pre-trained model and challenge inspiration.
+- [GitHub repo](https://github.com/Abcfsa/YOLOv8_head_detector). for the pre-trained model and challenge inspiration.
 - The creators of the Kumbh Mela dataset for providing valuable testing data.
 
 ---
