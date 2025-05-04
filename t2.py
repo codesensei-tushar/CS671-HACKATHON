@@ -219,8 +219,8 @@ def main():
     parser = argparse.ArgumentParser(description="Face Detection with YOLOv8-Face + Heatmap + Tracking")
     parser.add_argument("--url", type=str, default="http://100.69.5.85:4747/video",
                         help="DroidCam URL (default: http://100.69.5.85:4747/video)")
-    parser.add_argument("--model", type=str, default="yolov8m-face.pt",
-                        help="Path to YOLOv8 face detection model (default: yolov8m-face.pt)")
+    parser.add_argument("--model", type=str, default="medium.pt",
+                        help="Path to YOLOv8 face detection model (default: medium.pt)")
     parser.add_argument("--scale", type=float, default=1.0,
                         help="Processing scale for faster performance (0.5–1.0, default: 1.0)")
     parser.add_argument("--usb", action="store_true",
