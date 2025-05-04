@@ -22,7 +22,7 @@ The challenge was to accurately detect individuals in crowded environments, such
 ---
 
 ## 📊 Project Overview
-CrowdFlow is built on the [Ultralytics YOLOv8 framework](https://github.com/ultralytics/ultralytics), utilizing a pre-trained YOLOv8 model fine-tuned on the **Stud Head Dataset** from the internet. We further adapted the model using a pre-trained checkpoint from the [IIT Mandi Hackathon repository](https://github.com/anuragpandey382/IITMandiHackathon). The system is designed to handle complex crowd scenarios, such as those encountered in large-scale events like the Kumbh Mela.
+CrowdFlow is built on the [Ultralytics YOLOv8 framework](https://github.com/ultralytics/ultralytics), utilizing a pre-trained YOLOv8 model fine-tuned on the **Stud Head Dataset** from the internet. We further adapted the model using a pre-trained checkpoint from the [GitHub repo](https://github.com/Abcfsa/YOLOv8_head_detector). The system is designed to handle complex crowd scenarios, such as those encountered in large-scale events like the Kumbh Mela.
 
 The application is powered by a Gradio interface, launched via `app.py`, which allows users to upload videos or connect a DroidCam webcam for live processing. The output provides comprehensive insights into crowd behavior, making it a valuable tool for event management and safety monitoring.
 
@@ -57,7 +57,7 @@ Follow these steps to set up and run CrowdFlow locally:
    ```
 
 4. **Download Pre-Trained Model**:
-   Download the pre-trained YOLOv8 model from the [IIT Mandi Hackathon GitHub](https://github.com/anuragpandey382/IITMandiHackathon) and place it in the project directory.
+   Download the pre-trained YOLOv8 model from the [GitHub Repo](https://github.com/Abcfsa/YOLOv8_head_detector) and place it in the project directory.
 
 5. **Run the Application**:
    Launch the Gradio interface:
@@ -69,7 +69,7 @@ Follow these steps to set up and run CrowdFlow locally:
 ---
 
 ## 📂 Dataset
-- **Training**: The model was fine-tuned on the **Stud Head Dataset** sourced from the internet, tailored for head detection in crowded scenarios.
+- **Training**: The model was fine-tuned on the [Stud Head Dataset](https://github.com/HCIILAB/SCUT-HEAD-Dataset-Release) sourced from the internet, tailored for head detection in crowded scenarios.
 - **Testing**: We evaluated the model on the [Kumbh Mela Dataset](https://drive.google.com/drive/folders/1aT3KRRgx2T6xcJJlazcnLtTZpuzJjuGE), which provides real-world crowd footage for robust performance validation.
 
 ---
@@ -113,6 +113,6 @@ CrowdFlow excels at detecting and tracking individuals in dense crowds, with rel
 ---
 
 ## 📬 Contact
-For questions or feedback, please reach out to the CrowdFlow team via [your-email@example.com] or open an issue on the repository.
+For questions or feedback, please reach out to us via opening an issue on the repository.
 
 Thank you for exploring CrowdFlow! We hope this tool inspires innovative solutions for crowd management and safety.
