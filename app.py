@@ -188,10 +188,7 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
                 label="Model",
                 choices=[
                     "yolov12n.pt",
-                    "yolov12s.pt",
                     "yolov12m.pt",
-                    "yolov12l.pt",
-                    "yolov12x.pt",
                     "best.pt",
                     "medium.pt"
                 ],
