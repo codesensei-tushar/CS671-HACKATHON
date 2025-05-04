@@ -135,8 +135,9 @@ def app():
                         "yolov12m.pt",
                         "yolov12l.pt",
                         "yolov12x.pt",
+                        "medium.pt",
                     ],
-                    value="yolov12m.pt",
+                    value="medium.pt",
                 )
                 image_size = gr.Slider(
                     label="Image Size",

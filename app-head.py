@@ -2,23 +2,19 @@
 # Based on yolov10
 # https://github.com/THU-MIG/yolov10/app.py
 # --------------------------------------------------------'
-
+import threading
 import gradio as gr
 import cv2
 import tempfile
 from ultralytics import YOLO
-import subprocess
-import os
-import shutil
+from collections import defaultdict
+import numpy as np
 
- 
 def yolov12_inference(image, video, model_id, image_size, conf_threshold):
     model = YOLO(model_id)
-    # Only filter for class 0 if not using the face or crowdhuman model
-    if model_id not in ["yolov8m-face.pt", "crowdhuman_yolov5m.pt"]:
-        model.model.classes = [0]
+    model.model.classes = [0]
     if image:
-        results = model.predict(source=image, imgsz=image_size, conf=conf_threshold)
+        results = model.predict(source=image, imgsz=image_size, conf=conf_threshold,classes=[0])
         annotated_image = results[0].plot()
         return annotated_image[:, :, ::-1], None
     else:
@@ -40,9 +36,66 @@ def yolov12_inference(image, video, model_id, image_size, conf_threshold):
             if not ret:
                 break
 
-            results = model.predict(source=frame, imgsz=image_size, conf=conf_threshold)
+            results = model.predict(source=frame, imgsz=image_size, conf=conf_threshold,classes=[0])
             annotated_frame = results[0].plot()
             out.write(annotated_frame)
+
+        cap.release()
+        out.release()
+
+        return None, output_video_path
+    
+def yolov12_tracker_inference(image, video, model_id, image_size, conf_threshold):
+    model = YOLO(model_id)
+    model.model.classes = [0]
+    if image:
+        results = model.predict(source=image, imgsz=image_size, conf=conf_threshold, classes=[0], tracker="bytetrack.yaml")
+        annotated_image = results[0].plot()
+        return annotated_image[:, :, ::-1], None
+    else:
+        video_path = tempfile.mktemp(suffix=".webm")
+        with open(video_path, "wb") as f:
+            with open(video, "rb") as g:
+                f.write(g.read())
+
+        cap = cv2.VideoCapture(video_path)
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+        output_video_path = tempfile.mktemp(suffix=".webm")
+        out = cv2.VideoWriter(output_video_path, cv2.VideoWriter_fourcc(*'vp80'), fps, (frame_width, frame_height))
+
+        track_history = defaultdict(list)
+
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
+
+            results = model.track(frame, persist=True, imgsz=image_size, conf=conf_threshold, classes=[0], tracker="bytetrack.yaml")[0]
+
+            if results.boxes and results.boxes.id is not None:
+                boxes = results.boxes.xywh.cpu()
+                track_ids = results.boxes.id.int().cpu().tolist()
+
+                annotated_frame = results.plot()
+
+                for box, track_id in zip(boxes, track_ids):
+                    x, y, w, h = box
+                    track = track_history[track_id]
+                    track.append((int(x), int(y)))  # x, y center point
+                    if len(track) > 30:
+                        track.pop(0)
+
+                    # Draw the tracking lines
+                    points = np.array(track, dtype=np.int32).reshape((-1, 1, 2))
+                    if len(points) > 1:
+                        cv2.polylines(annotated_frame, [points], isClosed=False, color=(230, 230, 230), thickness=2)
+
+                out.write(annotated_frame)
+            else:
+                out.write(frame)
 
         cap.release()
         out.release()
@@ -51,65 +104,9 @@ def yolov12_inference(image, video, model_id, image_size, conf_threshold):
 
 
 def yolov12_inference_for_examples(image, model_path, image_size, conf_threshold):
-    annotated_image, _ = yolov12_inference(image, None, model_path, image_size, conf_threshold)
+    annotated_image, _ = yolov12_tracker_inference(image, None, model_path, image_size, conf_threshold)
     return annotated_image
 
-def crowdhuman_inference(image, video, weights_path, image_size, conf_threshold, detect_heads=True):
-    repo_dir = "/home/tushar/Documents/CS671-HACKATHON/yolov5-crowdhuman"
-    detect_py = os.path.join(repo_dir, "detect.py")
-    output_dir = tempfile.mkdtemp()
-    args = [
-        "python", detect_py,
-        "--weights", weights_path,
-        "--img", str(image_size),
-        "--conf", str(conf_threshold),
-        "--save-txt",
-        "--project", output_dir,
-        "--name", "result",
-        "--exist-ok"
-    ]
-    if detect_heads:
-        args.append("--heads")
-    else:
-        args.append("--person")
-
-    if image is not None:
-        # Save PIL/numpy image to temp file if needed
-        if isinstance(image, str):
-            image_path = image
-        else:
-            image_path = os.path.join(output_dir, "input.jpg")
-            if hasattr(image, "save"):
-                image.save(image_path)
-            else:
-                import cv2
-                cv2.imwrite(image_path, image[:, :, ::-1])
-        args += ["--source", image_path]
-    else:
-        # Video
-        video_path = tempfile.mktemp(suffix=".mp4")
-        with open(video_path, "wb") as f:
-            with open(video, "rb") as g:
-                f.write(g.read())
-        args += ["--source", video_path]
-
-    # Run detect.py
-    subprocess.run(args, cwd=repo_dir, check=True)
-
-    # Find output file
-    result_dir = os.path.join(output_dir, "result")
-    files = os.listdir(result_dir)
-    image_files = [f for f in files if f.lower().endswith((".jpg", ".png"))]
-    video_files = [f for f in files if f.lower().endswith((".mp4", ".avi", ".mov", ".webm"))]
-
-    output_image = None
-    output_video = None
-    if image_files:
-        output_image = os.path.join(result_dir, image_files[0])
-    if video_files:
-        output_video = os.path.join(result_dir, video_files[0])
-
-    return output_image, output_video
 
 def app():
     with gr.Blocks():
@@ -130,11 +127,9 @@ def app():
                         "yolov12m.pt",
                         "yolov12l.pt",
                         "yolov12x.pt",
-                        "yolov8m-face.pt",
-                        "best.pt",
-                        "crowdhuman_yolov5m.pt"
+                        "medium.pt",
                     ],
-                    value="crowdhuman_yolov5m.pt",
+                    value="medium.pt",
                 )
                 image_size = gr.Slider(
                     label="Image Size",
@@ -171,24 +166,10 @@ def app():
         )
 
         def run_inference(image, video, model_id, image_size, conf_threshold, input_type):
-            if model_id == "crowdhuman_yolov5m.pt":
-                weights_path = "/home/tushar/Documents/CS671-HACKATHON/yolov5-crowdhuman/crowdhuman_yolov5m.pt"
-                output_image, output_video = crowdhuman_inference(
-                    image, video, weights_path, image_size, conf_threshold, detect_heads=True
-                )
-                # Load and return the output for Gradio
-                if input_type == "Image":
-                    import cv2
-                    img = cv2.imread(output_image)
-                    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                    return img, None
-                else:
-                    return None, output_video
+            if input_type == "Image":
+                return yolov12_inference(image, None, model_id, image_size, conf_threshold)
             else:
-                if input_type == "Image":
-                    return yolov12_inference(image, None, model_id, image_size, conf_threshold)
-                else:
-                    return yolov12_inference(None, video, model_id, image_size, conf_threshold)
+                return yolov12_inference(None, video, model_id, image_size, conf_threshold)
 
 
         yolov12_infer.click(
