@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import threading
 import gradio as gr
 import cv2
@@ -47,7 +48,19 @@ def draw_dots_on_frame(frame, results, min_conf=0.3, min_box_area=0, track_histo
 def yolov12_tracker_inference(image, video, model_id, image_size, conf_threshold, mode, viz_mode, use_tracking):
     model = YOLO(model_id)
     model.model.classes = [0]
-    # Only boxes/dots for now, viz_mode is passed for future use
+    output_video_path = None
+    count = 0
+    info = "Processed"
+
+    if mode == "Original":
+        if video is not None:
+            video_path = tempfile.mktemp(suffix=".mp4")
+            with open(video_path, "wb") as f:
+                with open(video.name, "rb") as g:
+                    f.write(g.read())
+            return None, video_path, 0, "Original video"
+        return None, None, 0, "Original mode requires video input"
+
     if mode == "Detection":
         if image is not None:
             image = ensure_numpy_image(image)
@@ -57,7 +70,7 @@ def yolov12_tracker_inference(image, video, model_id, image_size, conf_threshold
             else:
                 annotated_image = results[0].plot()
             count = len(results[0].boxes)
-            return annotated_image[:, :, ::-1], None, count, f"Detected: {count} people"
+            return annotated_image[:, :, ::-1], None, count, f"Max pedestrians in a frame: {count}"
         elif video is not None:
             video_path = tempfile.mktemp(suffix=".mp4")
             with open(video_path, "wb") as f:
@@ -96,7 +109,7 @@ def yolov12_tracker_inference(image, video, model_id, image_size, conf_threshold
             else:
                 annotated_image = results[0].plot()
             count = len(results[0].boxes)
-            return annotated_image[:, :, ::-1], None, count, f"Tracked: {count} people"
+            return annotated_image[:, :, ::-1], None, count, f"Max pedestrians in a frame: {count}"
         elif video is not None:
             video_path = tempfile.mktemp(suffix=".mp4")
             with open(video_path, "wb") as f:
@@ -140,7 +153,6 @@ def yolov12_tracker_inference(image, video, model_id, image_size, conf_threshold
     elif mode == "Heatmap":
         if image is not None:
             image = ensure_numpy_image(image)
-            # For images, just run normal detection (optional: add heatmap for single image)
             return image, None, 0, "Heatmap for image not implemented"
         elif video is not None:
             video_path = tempfile.mktemp(suffix=".mp4")
@@ -167,25 +179,18 @@ def yolov12_tracker_inference(image, video, model_id, image_size, conf_threshold
             return None, output_video_path, 0, "Heatmap complete"
     return None, None, 0, "No input provided"
 
-def yolov12_inference_for_examples(image, model_path, image_size, conf_threshold):
-    annotated_image, _ = yolov12_tracker_inference(image, None, model_path, image_size, conf_threshold, "Detection", "Boxes", False)
-    return annotated_image
-
 with gr.Blocks(theme=gr.themes.Soft()) as demo:
     with gr.Row():
         # Sidebar
-        with gr.Column(scale=0.3, min_width=320):
+        with gr.Column(scale=1, min_width=320):
             gr.Markdown("## Controls")
             model_id = gr.Dropdown(
                 label="Model",
                 choices=[
                     "yolov12n.pt",
-                    "yolov12s.pt",
                     "yolov12m.pt",
-                    "yolov12l.pt",
-                    "yolov12x.pt",
                     "best.pt",
-                    "medium.pt",
+                    "medium.pt"
                 ],
                 value="medium.pt",
             )
@@ -203,17 +208,85 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
                 step=0.05,
                 value=0.25,
             )
-            mode = gr.Radio(["Detection", "Tracking", "Heatmap"], value="Detection", label="Mode")
             input_type = gr.Radio(["Image", "Video"], value="Image", label="Input Type")
             viz_mode = gr.Radio(["Boxes", "Dots"], value="Boxes", label="Visualization Mode")
             use_tracking = gr.Checkbox(label="Enable Tracking", value=False)
-            run_btn = gr.Button("Run Inference")
-        # Main content
-        with gr.Column(scale=0.7):
-            gr.Markdown("<h1 style='text-align: center; color: #20e3c2;'>YOLOV12 PEDESTRIAN DETECTION</h1>")
             upload = gr.File(label="Upload an image or video", file_types=[".jpg", ".jpeg", ".png", ".mp4", ".avi", ".mov", ".webm"])
-            output_image = gr.Image(type="numpy", label="Processed Image", visible=True)
-            output_video = gr.Video(label="Processed Video", visible=False)
+            run_btn = gr.Button("Run Inference")
+
+        # Main content
+        with gr.Column(scale=2):
+            gr.Markdown("<h1 style='text-align: center; color: #20e3c2;'>YOLOV12 PEDESTRIAN DETECTION</h1>")
+            
+            # Output area
+            output_image = gr.Image(type="numpy", label="Processed Image", visible=True, height=600, width=800)
+            
+            # Video outputs in a 5x5 grid, reordered as requested
+            with gr.Row(visible=True):
+                # First column
+                with gr.Column(scale=1):
+                    with gr.Row():
+                        original_video = gr.Video(label="Original", visible=False, height=250, width=300, autoplay=False, elem_id="original_video")
+                    with gr.Row():
+                        tracking_video = gr.Video(label="Tracking", visible=False, height=250, width=300, autoplay=False, elem_id="tracking_video")
+                    with gr.Row():
+                        gr.Markdown("")  # Empty slot
+                    with gr.Row():
+                        gr.Markdown("")  # Empty slot
+                    with gr.Row():
+                        gr.Markdown("")  # Empty slot
+                # Second column
+                with gr.Column(scale=1):
+                    with gr.Row():
+                        detection_video = gr.Video(label="Detection", visible=False, height=250, width=300, autoplay=False, elem_id="detection_video")
+                    with gr.Row():
+                        heatmap_video = gr.Video(label="Heatmap", visible=False, height=250, width=300, autoplay=False, elem_id="heatmap_video")
+                    with gr.Row():
+                        gr.Markdown("")  # Empty slot
+                    with gr.Row():
+                        gr.Markdown("")  # Empty slot
+                    with gr.Row():
+                        gr.Markdown("")  # Empty slot
+                # Third column
+                with gr.Column(scale=1):
+                    with gr.Row():
+                        gr.Markdown("")  # Empty slot
+                    with gr.Row():
+                        gr.Markdown("")  # Empty slot
+                    with gr.Row():
+                        gr.Markdown("")  # Empty slot
+                    with gr.Row():
+                        gr.Markdown("")  # Empty slot
+                    with gr.Row():
+                        gr.Markdown("")  # Empty slot
+                # Fourth column
+                with gr.Column(scale=1):
+                    with gr.Row():
+                        gr.Markdown("")  # Empty slot
+                    with gr.Row():
+                        gr.Markdown("")  # Empty slot
+                    with gr.Row():
+                        gr.Markdown("")  # Empty slot
+                    with gr.Row():
+                        gr.Markdown("")  # Empty slot
+                    with gr.Row():
+                        gr.Markdown("")  # Empty slot
+                # Fifth column
+                with gr.Column(scale=1):
+                    with gr.Row():
+                        gr.Markdown("")  # Empty slot
+                    with gr.Row():
+                        gr.Markdown("")  # Empty slot
+                    with gr.Row():
+                        gr.Markdown("")  # Empty slot
+                    with gr.Row():
+                        gr.Markdown("")  # Empty slot
+                    with gr.Row():
+                        gr.Markdown("")  # Empty slot
+
+            # Play All button
+            play_all_btn = gr.Button("Play All Videos", visible=False)
+
             metrics = gr.Textbox(label="Metrics / Info", interactive=False)
             count_box = gr.Number(value=0, label="Pedestrian Count", interactive=False, precision=0)
 
@@ -221,60 +294,73 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
         return (
             gr.update(visible=input_type == "Image"),
             gr.update(visible=input_type == "Video"),
+            gr.update(visible=input_type == "Video"),
+            gr.update(visible=input_type == "Video"),
+            gr.update(visible=input_type == "Video"),
+            gr.update(visible=input_type == "Video"),
         )
 
     input_type.change(
         fn=update_outputs,
         inputs=[input_type],
-        outputs=[output_image, output_video],
+        outputs=[output_image, detection_video, tracking_video, heatmap_video, original_video, play_all_btn],
     )
 
-    def run_all(upload, model_id, image_size, conf_threshold, mode, input_type, viz_mode, use_tracking):
+    def run_all(upload, model_id, image_size, conf_threshold, input_type, viz_mode, use_tracking):
         if input_type == "Image":
-            if upload is not None:
-                image = upload if upload.name.lower().endswith((".jpg", ".jpeg", ".png")) else None
-                img, vid, count, info = yolov12_tracker_inference(image, None, model_id, image_size, conf_threshold, mode, viz_mode, use_tracking)
-                return img, None, info, count
+            if upload is not None and upload.name.lower().endswith((".jpg", ".jpeg", ".png")):
+                image = upload
+                img, _, count, info = yolov12_tracker_inference(image, None, model_id, image_size, conf_threshold, "Detection", viz_mode, use_tracking)
+                return img, None, None, None, None, info, count, gr.update(visible=False)
             else:
-                return None, None, "No image uploaded", 0
+                return None, None, None, None, None, "No image uploaded", 0, gr.update(visible=False)
         else:
-            if upload is not None:
-                video = upload if upload.name.lower().endswith((".mp4", ".avi", ".mov", ".webm")) else None
-                img, vid, count, info = yolov12_tracker_inference(None, video, model_id, image_size, conf_threshold, mode, viz_mode, use_tracking)
-                return None, vid, info, count
+            if upload is not None and upload.name.lower().endswith((".mp4", ".avi", ".mov", ".webm")):
+                video = upload
+                # Process for Original
+                _, original_path, _, original_info = yolov12_tracker_inference(None, video, model_id, image_size, conf_threshold, "Original", viz_mode, use_tracking)
+                # Process for Detection
+                _, detection_path, detection_count, detection_info = yolov12_tracker_inference(None, video, model_id, image_size, conf_threshold, "Detection", viz_mode, use_tracking)
+                # Process for Tracking
+                _, tracking_path, tracking_count, tracking_info = yolov12_tracker_inference(None, video, model_id, image_size, conf_threshold, "Tracking", viz_mode, use_tracking)
+                # Process for Heatmap
+                _, heatmap_path, _, heatmap_info = yolov12_tracker_inference(None, video, model_id, image_size, conf_threshold, "Heatmap", viz_mode, use_tracking)
+                # Combine info
+                info = f"{original_info}\n{detection_info}\n{tracking_info}\n{heatmap_info}"
+                # Use detection count as primary count
+                count = detection_count
+                return None, detection_path, tracking_path, heatmap_path, original_path, info, count, gr.update(visible=True)
             else:
-                return None, None, "No video uploaded", 0
+                return None, None, None, None, None, "No video uploaded", 0, gr.update(visible=False)
+
+    # JavaScript to play all videos
+    play_all_js = """
+    () => {
+        const videos = [
+            document.getElementById("original_video").querySelector("video"),
+            document.getElementById("detection_video").querySelector("video"),
+            document.getElementById("tracking_video").querySelector("video"),
+            document.getElementById("heatmap_video").querySelector("video")
+        ];
+        videos.forEach(video => {
+            if (video) {
+                video.play().catch(e => console.error("Error playing video:", e));
+            }
+        });
+    }
+    """
 
     run_btn.click(
         fn=run_all,
-        inputs=[upload, model_id, image_size, conf_threshold, mode, input_type, viz_mode, use_tracking],
-        outputs=[output_image, output_video, metrics, count_box],
+        inputs=[upload, model_id, image_size, conf_threshold, input_type, viz_mode, use_tracking],
+        outputs=[output_image, detection_video, tracking_video, heatmap_video, original_video, metrics, count_box, play_all_btn],
     )
 
-    gr.Examples(
-        examples=[
-            [
-                "ultralytics/assets/bus.jpg",
-                "yolov12s.pt",
-                640,
-                0.25,
-            ],
-            [
-                "ultralytics/assets/zidane.jpg",
-                "yolov12x.pt",
-                640,
-                0.25,
-            ],
-        ],
-        fn=yolov12_inference_for_examples,
-        inputs=[
-            upload,
-            model_id,
-            image_size,
-            conf_threshold,
-        ],
-        outputs=[output_image],
-        cache_examples='lazy',
+    play_all_btn.click(
+        fn=None,
+        inputs=[],
+        outputs=[],
+        js=play_all_js
     )
 
-demo.launch()  
+demo.launch()
