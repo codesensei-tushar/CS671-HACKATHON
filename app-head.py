@@ -10,7 +10,41 @@ from ultralytics import YOLO
 from collections import defaultdict
 import numpy as np
 
+def yolov12_inference(image, video, model_id, image_size, conf_threshold):
+    model = YOLO(model_id)
+    model.model.classes = [0]
+    if image:
+        results = model.predict(source=image, imgsz=image_size, conf=conf_threshold,classes=[0])
+        annotated_image = results[0].plot()
+        return annotated_image[:, :, ::-1], None
+    else:
+        video_path = tempfile.mktemp(suffix=".webm")
+        with open(video_path, "wb") as f:
+            with open(video, "rb") as g:
+                f.write(g.read())
 
+        cap = cv2.VideoCapture(video_path)
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+        output_video_path = tempfile.mktemp(suffix=".webm")
+        out = cv2.VideoWriter(output_video_path, cv2.VideoWriter_fourcc(*'vp80'), fps, (frame_width, frame_height))
+
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
+
+            results = model.predict(source=frame, imgsz=image_size, conf=conf_threshold,classes=[0])
+            annotated_frame = results[0].plot()
+            out.write(annotated_frame)
+
+        cap.release()
+        out.release()
+
+        return None, output_video_path
+    
 def yolov12_tracker_inference(image, video, model_id, image_size, conf_threshold):
     model = YOLO(model_id)
     model.model.classes = [0]
@@ -95,7 +129,7 @@ def app():
                         "yolov12x.pt",
                         "medium.pt",
                     ],
-                    value="yolov12m.pt",
+                    value="medium.pt",
                 )
                 image_size = gr.Slider(
                     label="Image Size",
@@ -133,9 +167,9 @@ def app():
 
         def run_inference(image, video, model_id, image_size, conf_threshold, input_type):
             if input_type == "Image":
-                return yolov12_tracker_inference(image, None, model_id, image_size, conf_threshold)
+                return yolov12_inference(image, None, model_id, image_size, conf_threshold)
             else:
-                return yolov12_tracker_inference(None, video, model_id, image_size, conf_threshold)
+                return yolov12_inference(None, video, model_id, image_size, conf_threshold)
 
 
         yolov12_infer.click(

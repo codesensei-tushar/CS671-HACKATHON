@@ -184,9 +184,10 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
                     "yolov12m.pt",
                     "yolov12l.pt",
                     "yolov12x.pt",
-                    "best.pt"
+                    "best.pt",
+                    "medium.pt",
                 ],
-                value="best.pt",
+                value="medium.pt",
             )
             image_size = gr.Slider(
                 label="Image Size",
