@@ -5,3 +5,4 @@ __pycache__/
 *.toml
 mkdocs.yml
 .vscode/
+.gradio/
