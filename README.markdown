@@ -1,6 +1,6 @@
 # CrowdFlow: Real-Time Crowd Monitoring with YOLOv8
 
-Welcome to **CrowdFlow**, our innovative solution for real-time crowd detection and monitoring, developed for the IIT Mandi Hackathon. This project leverages advanced computer vision techniques to detect, track, and analyze crowd dynamics using the YOLOv8 model. Our solution processes video inputs (uploaded or live via webcam) and generates four insightful outputs: original video, person detection, tracking, and a heatmap of crowd density.
+Welcome to **CrowdFlow**, our innovative solution for real-time crowd detection and monitoring, developed for the IIT Mandi Hackathon. This project leverages advanced computer vision techniques to detect, track, and analyze crowd dynamics using the YOLOv8 model. Our solution processes video inputs (uploaded or live via droidcam) and generates four insightful outputs: original video, person detection, tracking, and a heatmap of crowd density.
 
 The challenge was to accurately detect individuals in crowded environments, such as the Kumbh Mela, and our solution delivers robust performance with real-time processing capabilities.
 
@@ -27,6 +27,19 @@ CrowdFlow is built on the [Ultralytics YOLOv8 framework](https://github.com/ultr
 The application is powered by a Gradio interface, launched via `app.py`, which allows users to upload videos or connect a DroidCam webcam for live processing. The output provides comprehensive insights into crowd behavior, making it a valuable tool for event management and safety monitoring.
 
 ---
+---
+
+## 🖼️ Sample Outputs
+
+Here are some snapshots of CrowdFlow in action:
+
+### Live Detection
+![Live Detection 1](assetslive_detection_1.jpg)
+![Live Detection 2](assets/live_detection_2.jpg)
+
+### Video Upload Detection
+![Video Upload Detection](assets/video_detection.jpg)
+
 
 ## 🛠️ Installation
 Follow these steps to set up and run CrowdFlow locally:
@@ -62,9 +75,16 @@ Follow these steps to set up and run CrowdFlow locally:
 5. **Run the Application**:
    Launch the Gradio interface:
    ```bash
-   python app.py
+   python app.py gradio
    ```
    This will start a local server (e.g., `http://localhost:7860`) where you can interact with the application.
+
+6. **Run Live Detection**:
+   Launch Droid app on webcam:
+   ```bash
+   python t2.py
+   ```
+   This will start a new terminal running where you can see live crowd detection.
 
 ---
 
