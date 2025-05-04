@@ -28,6 +28,20 @@ The application is powered by a Gradio interface, launched via `app.py`, which a
 
 ---
 
+## 🖼️ Sample Outputs
+
+Here are some snapshots of CrowdFlow in action:
+
+### Live Detection
+![Live Detection 1](assets/Live_detection_1.jpg)
+![Live Detection 2](assets/Live_detection_2.jpg)
+
+### Video Upload Detection
+![Video Upload Detection](assets/video_detection.jpg)
+
+
+---
+
 ## 🛠️ Installation
 Follow these steps to set up and run CrowdFlow locally:
 
